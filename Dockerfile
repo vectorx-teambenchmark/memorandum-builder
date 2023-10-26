@@ -16,4 +16,5 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 # configure nginx to serve single page app
 COPY nginx.conf /etc/nginx/nginx.conf
 #start up nginx
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
