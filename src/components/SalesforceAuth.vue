@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onBeforeMount } from 'vue';
+import { onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import useAuthStore from '../stores/auth';
 
@@ -9,7 +9,7 @@ const router = useRouter();
 
 function authNavigation(){
     let fullUrl = `${authStore.authUrl}?client_id=${authStore.clientId}&redirect_uri=${authStore.callbackUrl}&response_type=${authStore.responseType}&display=${authStore.displayType}`;
-    if(Array.isArray(route.params.recordId) && route.params.recordId.length > 0){
+    if(Array.isArray(route.params?.recordId) && route.params?.recordId?.length > 0){
         fullUrl += '&state=' + route.params.recordId[0];
     }
     window.location = fullUrl;

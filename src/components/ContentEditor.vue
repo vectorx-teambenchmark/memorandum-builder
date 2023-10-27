@@ -312,7 +312,7 @@ function closeWindow(){
  */
 onBeforeMount(()=>{
     let {recordId, apiUrl, accessToken} = props;
-    if( recordId !== null && apiUrl !== null && accessToken !== null) {
+    if(recordId !== undefined && recordId !== null && apiUrl !== null && accessToken !== null) {
         //create rest endpoint for MemorandumContent__c access
         axios.get(recordApiUrl, {
             headers:{
@@ -324,6 +324,9 @@ onBeforeMount(()=>{
             ? response.data?.Body__c: '';
             contentName.value  = response.data?.Name;
         })
+    } else {
+        modalText = 'Unable to Retrieve Record.';
+        showModal = true;
     }
 })
 </script>
