@@ -55,12 +55,6 @@ const useAuthStore = defineStore('authStore',()=>{
         if($cookies.isKey('authStore')){
             authObj = $cookies.get('authStore');
         }
-        /*
-        let authString = sessionStorage.getItem('authStore');
-        if(authString !== null && authString.length > 0) {
-            authObj = Object.assign(authObj,JSON.parse(authString));
-        }
-        */
         return authObj;
     }
     /**
