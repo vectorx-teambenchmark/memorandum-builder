@@ -5,3 +5,96 @@
   font-family: 'Poppins';
   src: url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap');
 }
+
+@font-face {
+  font-family: 'Passenger Display Regular';
+  src: url('passengerdisplay-regular-webfont.woff2') format('woff2'),
+       url('passengerdisplay-regular-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+
+
+@font-face {
+  font-family: 'Passenger Display Bold';
+  src: url('passengerdisplay-bold-webfont.woff2') format('woff2'),
+       url('passengerdisplay-bold-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+
+
+@font-face {
+  font-family: 'Passenger Display Bold Italic';
+  src: url('passengerdisplay-bolditalic-webfont.woff2') format('woff2'),
+       url('passengerdisplay-bolditalic-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+
+
+@font-face {
+  font-family: 'Passenger Display Extra Bold';
+  src: url('passengerdisplay-extrabold-webfont.woff2') format('woff2'),
+       url('passengerdisplay-extrabold-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+
+
+@font-face {
+  font-family: 'Passenger Display Extra Bold Italic';
+  src: url('passengerdisplay-extrabolditalic-webfont.woff2') format('woff2'),
+       url('passengerdisplay-extrabolditalic-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+
+
+@font-face {
+  font-family: 'Passenger Display Extra Light';
+  src: url('passengerdisplay-extralight-webfont.woff2') format('woff2'),
+       url('passengerdisplay-extralight-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+
+
+@font-face {
+  font-family: 'Passenger Display Extra Light Italic';
+  src: url('passengerdisplay-extralightitalic-webfont.woff2') format('woff2'),
+       url('passengerdisplay-extralightitalic-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+
+
+
+@font-face {
+  font-family: 'passenger_displayitalic';
+  src: url('passengerdisplay-italic-webfont.woff2') format('woff2'),
+       url('passengerdisplay-italic-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}

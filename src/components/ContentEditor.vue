@@ -9,6 +9,7 @@ import { Bold, Italic, Strikethrough, Subscript, Superscript, Underline } from '
 import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
 import { FindAndReplace } from '@ckeditor/ckeditor5-find-and-replace';
 import { FormatPainter } from '@ckeditor/ckeditor5-format-painter';
+import { GeneralHtmlSupport } from '@ckeditor/ckeditor5-html-support';
 import { DocumentList, DocumentListProperties } from '@ckeditor/ckeditor5-list';
 import { FontBackgroundColor, FontColor, FontFamily, FontSize } from '@ckeditor/ckeditor5-font';
 import { HorizontalLine } from '@ckeditor/ckeditor5-horizontal-line';
@@ -24,6 +25,7 @@ import { SelectAll } from '@ckeditor/ckeditor5-select-all';
 import { SlashCommand } from '@ckeditor/ckeditor5-slash-command';
 import { SpecialCharacters, SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
          SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText } from '@ckeditor/ckeditor5-special-characters';
+import { Style } from '@ckeditor/ckeditor5-style';
 import { Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar } from '@ckeditor/ckeditor5-table';
 import { Template } from '@ckeditor/ckeditor5-template';
 import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
@@ -60,6 +62,7 @@ const editorConfig = {
         FontFamily, 
         FontSize,
         FormatPainter,
+        GeneralHtmlSupport,
         HorizontalLine,
         HtmlEmbed,
         Italic,
@@ -89,6 +92,7 @@ const editorConfig = {
         SpecialCharactersLatin, 
         SpecialCharactersMathematical, 
         SpecialCharactersText,
+        Style,
         Subscript, 
         Superscript,
         Table, 
@@ -229,8 +233,21 @@ const editorConfig = {
             }
         ]
     },
+    fontFamily: {
+        options:[
+            'default',
+            'Poppins',
+            'Passenger Display Regular',
+            'Passenger Display Bold',
+            'Passenger Display Bold Italic',
+            'Passenger Display Extra Bold',
+            'Passenger Display Extra Bold Italic',
+            'Passenger Display Extra Light',
+            'Passenger Display Extra Light Italic'
+        ]
+    },
     fontSize:{
-        options: [9,10,11,12,14,16,18,20,24]
+        options: [9,10,11,12,14,16,18,20,24,32,48,60]
     },
     image: {
         toolbar: [
@@ -262,6 +279,15 @@ const editorConfig = {
     simpleUpload: {
         uploadUrl: 'https://us-central1-cloud-functions-test-397013.cloudfunctions.net/image-host'
     },
+    style: {
+        definitions: [
+            {
+                name: 'Heading',
+                element:'p',
+                classes: ['heading']
+            }
+        ]
+    },
     table: {
         contentToolbar: [
             'tableColumn',
@@ -271,7 +297,26 @@ const editorConfig = {
             'tableProperties'
         ]
     },
-    toolbar: [
+    template: {
+        definitions: [
+            {
+                title: '15 Row Table',
+                description: 'A Table with 3 columns and 15 rows.',
+                data: '<figure class="table"><table><tbody><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table></figure>'
+            },
+            {
+                title: '20 Row Table',
+                description: 'A Table with 3 columns and 20 rows.',
+                data: '<figure class="table"><table><tbody><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table></figure>'
+            },
+            {
+                title:'Highlight Box',
+                description: 'A table that serves as a highlight box.',
+                data: '<figure class="table" style="width:13.73%;"><table class="ck-table-resized" style="border:.15rem solid hsl(207,25%,23%);"><colgroup><col style="width:13.93%;"><col style="width:86.07%;"></colgroup><thead><tr><th style="background-color:hsl(207,25%,23%);" colspan="2"><p style="text-align:center;"><span style="color:hsl(0,0%,100%);font-family:\'Passenger Display Bold\';font-size:24px;">Title</span></p></th></tr></thead><tbody><tr><td style="width:5%;">&nbsp;</td><td style="width:95%;"><ul><li><span style="font-family:Poppins;font-size:12px;">Turducken sed buffalo nulla, prosciutto boudin dolore fatback.</span></li><li><span style="font-family:Poppins;font-size:12px;">Bacon ipsum dolor amet irure ex flank t-bone, quis buffalo tail pariatur rump aliqua drumstick frankfurter corned beef non.</span></li><li><span style="font-family:Poppins;font-size:12px;">Duis anim dolor officia id.</span></li></ul></td></tr></tbody></table></figure>'
+            }
+        ]
+    },
+    toolbar: ['style',
         'alignment','bold','italic','underline','strikethrough','subscript','superscript','removeFormat','formatPainter','|',
         'fontBackgroundColor','fontColor','fontSize','fontFamily','|','link','bulletedList','numberedList','selectAll','|',
         'horizontalLine','outdent','indent','|','imageUpload','htmlEmbed','blockQuote','insertTable','mediaEmbed','insertTemplate',
@@ -306,6 +351,9 @@ function closeModal(){
 function closeWindow(){
     window.close();
 }
+function issueDebug(){
+    console.log(editorData.value);
+}
 
 /**
  * lifecycle methods for VueJS components
@@ -325,8 +373,8 @@ onBeforeMount(()=>{
             contentName.value  = response.data?.Name;
         })
     } else {
-        modalText = 'Unable to Retrieve Record.';
-        showModal = true;
+        modalText.value = 'Unable to Retrieve Record.';
+        showModal.value = true;
     }
 })
 </script>
@@ -351,6 +399,7 @@ onBeforeMount(()=>{
         <div class="navbar-end">
             <button class="navbar-item button is-info is-medium mr-3" v-on:click="handleSave">Save</button>
             <button class="navbar-item button is-medium is-danger" v-on:click="closeWindow">Close</button>
+            <button class="navbar-item button is-medium is-warning" v-on:click="issueDebug">Debug</button>
         </div>
     </nav>
     <ckeditor :editor="editor" v-model="editorData" :config="editorConfig" />
@@ -363,5 +412,10 @@ onBeforeMount(()=>{
     }
     .ck.ck-content {
         padding: 1.2rem;
+    }
+    .heading {
+        font-family: 'Passenger Display Extra Bold';
+        font-size: 5rem;
+        letter-spacing: .2rem;
     }
 </style>
