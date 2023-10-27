@@ -41,11 +41,12 @@ const useAuthStore = defineStore('authStore',()=>{
      * it will return a default auth object with the bearerToken and apiUrl empty.
      */
     function rehydrateAuthInfo(){
+        window.console.log('All Environment Variables: %s',JSON.stringify(import.meta.env,null,"\t"));
         let authObj = {
             bearerToken: '',
             apiUrl:'',
             authUrl:'https://benchmarkinternational--vxdev.sandbox.my.salesforce.com/services/oauth2/authorize',
-            callbackUrl:'http://localhost:8080/',
+            callbackUrl: import.meta.env.VITE_CALLBACK_URL,
             clientId:'3MVG9eQyYZ1h89HeOdsdV9Y5dMYialY5mOZhtsRUdcePzvRoE21Je2NA9gr8f5XP31YtBvAuhcFgpVGEXX8CY',
             clientSecret:'9C20DA8A91BA0C8E7359D2930BB1C9673DF5C35760EB40CB4BF8A8AB1BD6808D',
             responseType:'token',
