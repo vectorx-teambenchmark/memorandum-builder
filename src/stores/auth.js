@@ -1,7 +1,8 @@
-import { reactive, computed } from 'vue';
+import { reactive, computed, inject } from 'vue';
 import { defineStore } from 'pinia';
 
 const useAuthStore = defineStore('authStore',()=>{
+    const $cookies = inject('$cookies');
     const authInfo = reactive(rehydrateAuthInfo());
     const bearerToken = computed(()=>{
         return authInfo.bearerToken;
@@ -48,14 +49,18 @@ const useAuthStore = defineStore('authStore',()=>{
             authUrl:'https://benchmarkinternational--vxdev.sandbox.my.salesforce.com/services/oauth2/authorize',
             callbackUrl: import.meta.env.VITE_CALLBACK_URL,
             clientId:'3MVG9eQyYZ1h89HeOdsdV9Y5dMYialY5mOZhtsRUdcePzvRoE21Je2NA9gr8f5XP31YtBvAuhcFgpVGEXX8CY',
-            clientSecret:'9C20DA8A91BA0C8E7359D2930BB1C9673DF5C35760EB40CB4BF8A8AB1BD6808D',
             responseType:'token',
             displayType:'page'
         };
+        if($cookies.isKey('authStore')){
+            authObj = $cookies.get('authStore');
+        }
+        /*
         let authString = sessionStorage.getItem('authStore');
         if(authString !== null && authString.length > 0) {
             authObj = Object.assign(authObj,JSON.parse(authString));
         }
+        */
         return authObj;
     }
     /**
@@ -63,9 +68,14 @@ const useAuthStore = defineStore('authStore',()=>{
      */
     function storeSession(){
         let { bearerToken, apiUrl, authUrl, callbackUrl, clientId, clientSecret, responseType, displayPage } = authInfo;
+        /*
         sessionStorage.setItem('authStore',JSON.stringify({
             bearerToken, apiUrl, authUrl, callbackUrl, clientId, clientSecret, responseType, displayPage
         }));
+        */
+       $cookies.set('authStore',JSON.stringify({
+            bearerToken, apiUrl, authUrl, callbackUrl, clientId, clientSecret, responseType, displayPage
+       }),'');
     }
 
     return { bearerToken, authUrl, apiUrl, callbackUrl, clientId, responseType, displayType, isAuthenticated, setToken, setApiUrl };
