@@ -361,4 +361,7 @@ onBeforeMount(()=>{
         font-family: Poppins,sans-serif;
         font-weight: 700;
     }
+    .ck.ck-content {
+        padding: 1.2rem;
+    }
 </style>
