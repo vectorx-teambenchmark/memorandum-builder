@@ -1,3 +1,4 @@
+# build stage
 FROM node:lts-alpine as build-stage
 
 WORKDIR /app
@@ -12,9 +13,8 @@ RUN npm run build
 
 # production stage
 FROM nginx:stable-alpine as production-stage
+
 COPY --from=build-stage /app/dist /usr/share/nginx/html
-# configure nginx to serve single page app
 COPY nginx.conf /etc/nginx/nginx.conf
-#start up nginx
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 8080
+CMD [ "nginx","-g","daemon off;"]
