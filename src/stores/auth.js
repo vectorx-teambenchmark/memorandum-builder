@@ -46,7 +46,7 @@ const useAuthStore = defineStore('authStore',()=>{
         let authObj = {
             bearerToken: '',
             apiUrl:'',
-            authUrl:'https://benchmarkinternational--vxdev.sandbox.my.salesforce.com/services/oauth2/authorize',
+            authUrl:'https://benchmarkinternational--full.sandbox.my.salesforce.com/services/oauth2/authorize',
             callbackUrl: import.meta.env.VITE_CALLBACK_URL,
             clientId:'3MVG9eQyYZ1h89HeOdsdV9Y5dMYialY5mOZhtsRUdcePzvRoE21Je2NA9gr8f5XP31YtBvAuhcFgpVGEXX8CY',
             responseType:'token',
