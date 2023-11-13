@@ -170,10 +170,10 @@ const editorConfig = {
         WordCount
     ],
     fontBackgroundColor: {
-        colors:colorArray
+        colors:colorArray.value
     },
     fontColor: {
-        colors:colorArray
+        colors:colorArray.value
     },
     fontFamily: {
         options:[
