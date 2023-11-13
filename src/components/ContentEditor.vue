@@ -239,12 +239,12 @@ const editorConfig = {
             'tableProperties'
         ],
         tableProperties: {
-            borderColors:colorArray,
-            backgroundColors:colorArray
+            borderColors: colorArray.value,
+            backgroundColors: colorArray.value
         },
         tableCellProperties: {
-            borderColors:colorArray,
-            backgroundColors:colorArray
+            borderColors: colorArray.value,
+            backgroundColors: colorArray.value
         }
     },
     template: {
