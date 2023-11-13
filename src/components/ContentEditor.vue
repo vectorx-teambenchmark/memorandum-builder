@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { ref, onBeforeMount } from 'vue';
+import { ref, onBeforeMount, computed } from 'vue';
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
@@ -44,6 +44,70 @@ const props = defineProps({
     type: String,
     required: true
    } 
+});
+const colorArray = computed(()=>{
+    return [
+            {
+                color: 'hsl(0,0%,65%)',
+                name: 'Medium Grey'
+            },
+            {
+                color: 'hsl(214,73%,58%)',
+                name: 'Blue 1'
+            },
+            {
+                color: 'hsl(205,32%,39%)',
+                name: 'Slate Blue'
+            },
+            {
+                color: 'hsl(0,0%,100%)',
+                name: 'White'
+            },
+            {
+                color: 'hsl(0,0%,84%)',
+                name: 'off-white'
+            },
+            {
+                color: 'hsl(199,66%,56%)',
+                name: 'Blue 2'
+            },
+            {
+                color: 'hsl(209,34%,51%)',
+                name: 'Slate Blue Light'
+            },
+            {
+                color: 'hsl(29,28%,55%)',
+                name: 'Brown'
+            },
+            {
+                color: 'hsl(19,36%,45%)',
+                name: 'Bronze'
+            },
+            {
+                color: 'hsl(207,25%,23%)',
+                name: 'Slate Blue Dark'
+            },
+            {
+                color: 'hsl(0,0%,17%)',
+                name: 'Dark Grey'
+            },
+            {
+                color: 'hsl(36,49%,64%)',
+                name: 'Light Brown'
+            },
+            {
+                color: 'hsl(20,40%,51%)',
+                name: 'High Bronze'
+            },
+            {
+                color: 'hsl(213,21%,36%)',
+                name: 'Slate Blue Medium'
+            },
+            {
+                color: 'hsl(0,0,27)',
+                name: 'Dark Grey'
+            }
+        ];
 });
 const recordApiUrl = `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`;
 const ckeditor = CKEditor.component;
@@ -106,132 +170,10 @@ const editorConfig = {
         WordCount
     ],
     fontBackgroundColor: {
-        colors:[
-            {
-                color: 'hsl(0,0%,65%)',
-                name: 'Medium Grey'
-            },
-            {
-                color: 'hsl(214,73%,58%)',
-                name: 'Blue 1'
-            },
-            {
-                color: 'hsl(205,32%,39%)',
-                name: 'Slate Blue'
-            },
-            {
-                color: 'hsl(0,0%,100%)',
-                name: 'White'
-            },
-            {
-                color: 'hsl(0,0%,84%)',
-                name: 'off-white'
-            },
-            {
-                color: 'hsl(199,66%,56%)',
-                name: 'Blue 2'
-            },
-            {
-                color: 'hsl(209,34%,51%)',
-                name: 'Slate Blue Light'
-            },
-            {
-                color: 'hsl(29,28%,55%)',
-                name: 'Brown'
-            },
-            {
-                color: 'hsl(19,36%,45%)',
-                name: 'Bronze'
-            },
-            {
-                color: 'hsl(207,25%,23%)',
-                name: 'Slate Blue Dark'
-            },
-            {
-                color: 'hsl(0,0%,17%)',
-                name: 'Dark Grey'
-            },
-            {
-                color: 'hsl(36,49%,64%)',
-                name: 'Light Brown'
-            },
-            {
-                color: 'hsl(20,40%,51%)',
-                name: 'High Bronze'
-            },
-            {
-                color: 'hsl(213,21%,36%)',
-                name: 'Slate Blue Medium'
-            },
-            {
-                color: 'hsl(0,0,27)',
-                name: 'Dark Grey'
-            }
-        ]
+        colors:colorArray
     },
     fontColor: {
-        colors:[
-            {
-                color: 'hsl(0,0%,65%)',
-                name: 'Medium Grey'
-            },
-            {
-                color: 'hsl(214,73%,58%)',
-                name: 'Blue 1'
-            },
-            {
-                color: 'hsl(205,32%,39%)',
-                name: 'Slate Blue'
-            },
-            {
-                color: 'hsl(0,0%,100%)',
-                name: 'White'
-            },
-            {
-                color: 'hsl(0,0%,84%)',
-                name: 'off-white'
-            },
-            {
-                color: 'hsl(199,66%,56%)',
-                name: 'Blue 2'
-            },
-            {
-                color: 'hsl(209,34%,51%)',
-                name: 'Slate Blue Light'
-            },
-            {
-                color: 'hsl(29,28%,55%)',
-                name: 'Brown'
-            },
-            {
-                color: 'hsl(19,36%,45%)',
-                name: 'Bronze'
-            },
-            {
-                color: 'hsl(207,25%,23%)',
-                name: 'Slate Blue Dark'
-            },
-            {
-                color: 'hsl(0,0%,17%)',
-                name: 'Dark Grey'
-            },
-            {
-                color: 'hsl(36,49%,64%)',
-                name: 'Light Brown'
-            },
-            {
-                color: 'hsl(20,40%,51%)',
-                name: 'High Bronze'
-            },
-            {
-                color: 'hsl(213,21%,36%)',
-                name: 'Slate Blue Medium'
-            },
-            {
-                color: 'hsl(0,0,27)',
-                name: 'Dark Grey'
-            }
-        ]
+        colors:colorArray
     },
     fontFamily: {
         options:[
@@ -295,7 +237,15 @@ const editorConfig = {
             'mergeTableCells',
             'tableCellProperties',
             'tableProperties'
-        ]
+        ],
+        tableProperties: {
+            borderColors:colorArray,
+            backgroundColors:colorArray
+        },
+        tableCellProperties: {
+            borderColors:colorArray,
+            backgroundColors:colorArray
+        }
     },
     template: {
         definitions: [
