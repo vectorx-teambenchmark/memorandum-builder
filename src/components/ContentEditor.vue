@@ -146,7 +146,6 @@ const editorConfig = {
         MediaEmbedToolbar,
         Mention,
         Paragraph,
-        PasteFromOfficeEnhanced,
         RemoveFormat,
         SelectAll,
         SimpleUploadAdapter,
