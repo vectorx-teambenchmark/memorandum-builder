@@ -20,6 +20,8 @@ import { Link, LinkImage } from '@ckeditor/ckeditor5-link';
 import { MediaEmbed, MediaEmbedToolbar } from '@ckeditor/ckeditor5-media-embed';
 import { Mention } from '@ckeditor/ckeditor5-mention';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
+import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
+import { PasteFromOfficeEnhanced } from '@ckeditor/ckeditor5-paste-from-office-enhanced';
 import { RemoveFormat } from '@ckeditor/ckeditor5-remove-format';
 import { SelectAll } from '@ckeditor/ckeditor5-select-all';
 import { SlashCommand } from '@ckeditor/ckeditor5-slash-command';
@@ -144,6 +146,8 @@ const editorConfig = {
         MediaEmbedToolbar,
         Mention,
         Paragraph,
+        PasteFromOffice,
+        PasteFromOfficeEnhanced,
         RemoveFormat,
         SelectAll,
         SimpleUploadAdapter,
