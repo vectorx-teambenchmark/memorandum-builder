@@ -31,7 +31,10 @@ onBeforeMount(()=>{
         route.params.recordId = hashInfo?.state;
     }
     if(authStore.isAuthenticated){
+        console.log('The authStore shows authentication - should push to editor.');
         router.push({name:'editor',params:route.params});
+    } else {
+        console.log('The authStore does not show Authentication.');
     }
 })
 </script>

@@ -20,8 +20,8 @@ import { Link, LinkImage } from '@ckeditor/ckeditor5-link';
 import { MediaEmbed, MediaEmbedToolbar } from '@ckeditor/ckeditor5-media-embed';
 import { Mention } from '@ckeditor/ckeditor5-mention';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
-//import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
-//import { PasteFromOfficeEnhanced } from '@ckeditor/ckeditor5-paste-from-office-enhanced';
+import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
+import { PasteFromOfficeEnhanced } from '@ckeditor/ckeditor5-paste-from-office-enhanced';
 import { RemoveFormat } from '@ckeditor/ckeditor5-remove-format';
 import { SelectAll } from '@ckeditor/ckeditor5-select-all';
 import { SlashCommand } from '@ckeditor/ckeditor5-slash-command';
@@ -146,6 +146,8 @@ const editorConfig = {
         MediaEmbedToolbar,
         Mention,
         Paragraph,
+        PasteFromOffice,
+        PasteFromOfficeEnhanced,
         RemoveFormat,
         SelectAll,
         SimpleUploadAdapter,
@@ -279,7 +281,7 @@ const editorConfig = {
         'horizontalLine','outdent','indent','|','imageUpload','htmlEmbed','blockQuote','insertTable','mediaEmbed','insertTemplate',
         'specialCharacters','undo','redo','findAndReplace'
     ],
-    licenseKey: 'Yk01MXFnaDlIT3BZRHpWejJhWGRrYUZqaEVjNFdaY0h5NHJ0MHBlYXZuNzZvS3lJek9Xck4wdEFxM1VSLU1qQXlNekV4TURrPQ==',
+    licenseKey: 'MktzKzlWWDEvSTdoOXV6TkhtY0RVVm0wMWlldTNtYzNPR2Y1dEVmWlJSaW9yQmhrcWRZQlJrb1RTUnl0LU1qQXlNekV4TWpFPQ==',
 };
 const editorData = ref('');
 const contentName = ref('');
