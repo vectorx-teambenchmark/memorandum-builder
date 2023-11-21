@@ -272,6 +272,21 @@ const editorConfig = {
                 title:'Highlight Box',
                 description: 'A table that serves as a highlight box.',
                 data: '<figure class="table" style="width:13.73%;"><table class="ck-table-resized" style="border:.15rem solid hsl(207,25%,23%);"><colgroup><col style="width:13.93%;"><col style="width:86.07%;"></colgroup><thead><tr><th style="background-color:hsl(207,25%,23%);" colspan="2"><p style="text-align:center;"><span style="color:hsl(0,0%,100%);font-family:\'Passenger Display Bold\';font-size:24px;">Title</span></p></th></tr></thead><tbody><tr><td style="width:5%;">&nbsp;</td><td style="width:95%;"><ul><li><span style="font-family:Poppins;font-size:12px;">Turducken sed buffalo nulla, prosciutto boudin dolore fatback.</span></li><li><span style="font-family:Poppins;font-size:12px;">Bacon ipsum dolor amet irure ex flank t-bone, quis buffalo tail pariatur rump aliqua drumstick frankfurter corned beef non.</span></li><li><span style="font-family:Poppins;font-size:12px;">Duis anim dolor officia id.</span></li></ul></td></tr></tbody></table></figure>'
+            },
+            {
+                title:'Two Column Layout - Evenly Distributed',
+                description: 'A table that serves as a two column layout with each column being evenly distributed.',
+                data: `<figure class="table" style="width:100%;"><table><tbody><tr><td style="vertical-align:top;width:50%;">&nbsp;</td><td style="vertical-align:top;width:50%;">&nbsp;</td></tr></tbody></table></figure>`
+            },
+            {
+                title:'Two column Layout - 60/40',
+                description: 'A table that serves as a two-column layout with the first column taking 60% of the size and the second column having 40% size.',
+                data: `<figure class="table" style="width:100%;"><table><tbody><tr><td style="width:60%;">&nbsp;</td><td style="width:40%;">&nbsp;</td></tr></tbody></table></figure>`
+            },
+            {
+                title:'Three column Layout - Evenly Distributed',
+                description: 'A table that serves as a three column layout with each column being evenly distributed.',
+                data: `<figure class="table" style="width:100%;"><table><tbody><tr><td style="vertical-align:top;width:33%;">&nbsp;</td><td style="vertical-align:top;width:33%;">&nbsp;</td><td style="vertical-align:top;width:33%;">&nbsp;</td></tr></tbody></table></figure>`
             }
         ]
     },
