@@ -33,6 +33,7 @@ onBeforeMount(()=>{
         router.push({name:'home',params:route.params});
     }
     //obtain record data
+    window.console.log('Record ID: %s',JSON.stringify(recordId.value,null,"\t"));
     let recordApiUrl = `${authStore.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${recordId.value}`;
     axios.get(recordApiUrl,{
         headers:{
@@ -46,7 +47,7 @@ onBeforeMount(()=>{
             ? response?.data?.Body__c : '';
         displayEditor.value = true;
     }).catch( err => {
-        window.console.log('There wa an Error Retrieving the records: %s',JSON.stringify(err,null,"\t"));
+        window.console.log('There was an Error Retrieving the records: %s',JSON.stringify(err.message,null,"\t"));
     });
 
 });
