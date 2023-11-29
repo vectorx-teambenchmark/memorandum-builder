@@ -17,7 +17,7 @@ const hasRecordId = computed(()=>{
 const recordId = computed(()=>{
     let retVal;
     if(Array.isArray(route.params?.recordId)){
-        route.params.recordId[0];
+        retVal = route.params.recordId[0];
     } else {
         retVal = (route.params?.recordId !== undefined && route.params?.recordId !== null) ? route.params.recordId : '';
     }
