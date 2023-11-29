@@ -71,8 +71,13 @@ const useAuthStore = defineStore('authStore',()=>{
             bearerToken, apiUrl, authUrl, callbackUrl, clientId, clientSecret, responseType, displayPage
        }),'');
     }
+    function $reset(){
+        $cookies.remove('authStore');
+        authInfo.bearerToken = '';
+        authInfo.apiUrl = '';
+    }
 
-    return { bearerToken, authUrl, apiUrl, callbackUrl, clientId, responseType, displayType, isAuthenticated, setToken, setApiUrl };
+    return { bearerToken, authUrl, apiUrl, callbackUrl, clientId, responseType, displayType, isAuthenticated, setToken, setApiUrl, $reset };
 });
 
 export default useAuthStore;
