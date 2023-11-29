@@ -204,10 +204,26 @@ const editorConfig = {
         options: [9,10,11,12,14,16,18,20,24,32,48,60]
     },
     image: {
+        insert: {
+            type:'block'
+        },
         toolbar: [
             'imageTextAlternative',
             'toggleImageCaption',
-            'linkImage'
+            'linkImage',
+            '|',
+            {
+                name:'imageStyle:icons',
+                title:'Inline Alignment',
+                items:['imageStyle:inline','imageStyle:alignLeft','imageStyle:alignRight'],
+                defaultItem:'imageStyle:inline'
+            },
+            {
+                name:'imageStyle:pictures',
+                title:'Block Alignment',
+                items:['imageStyle:block','imageStyle:alignBlockLeft','imageStyle:alignBlockRight'],
+                defaultItem:'imageStyle:block'
+            }
         ]
     },
     mediaEmbed: {
