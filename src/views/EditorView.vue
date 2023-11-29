@@ -48,6 +48,8 @@ onBeforeMount(()=>{
         displayEditor.value = true;
     }).catch( err => {
         window.console.log('There was an Error Retrieving the records: %s',JSON.stringify(err.message,null,"\t"));
+        authStore.$reset();
+        router.push({name:'home',params:route.params});
     });
 
 });
