@@ -12,11 +12,7 @@
        url('passengerdisplay-regular-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-
 }
-
-
-
 
 @font-face {
   font-family: 'Passenger Display Bold';
@@ -24,11 +20,7 @@
        url('passengerdisplay-bold-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-
 }
-
-
-
 
 @font-face {
   font-family: 'Passenger Display Bold Italic';
@@ -36,11 +28,7 @@
        url('passengerdisplay-bolditalic-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-
 }
-
-
-
 
 @font-face {
   font-family: 'Passenger Display Extra Bold';
@@ -48,11 +36,7 @@
        url('passengerdisplay-extrabold-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-
 }
-
-
-
 
 @font-face {
   font-family: 'Passenger Display Extra Bold Italic';
@@ -60,11 +44,7 @@
        url('passengerdisplay-extrabolditalic-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-
 }
-
-
-
 
 @font-face {
   font-family: 'Passenger Display Extra Light';
@@ -72,11 +52,7 @@
        url('passengerdisplay-extralight-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-
 }
-
-
-
 
 @font-face {
   font-family: 'Passenger Display Extra Light Italic';
@@ -84,11 +60,7 @@
        url('passengerdisplay-extralightitalic-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-
 }
-
-
-
 
 @font-face {
   font-family: 'passenger_displayitalic';
@@ -96,5 +68,4 @@
        url('passengerdisplay-italic-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-
 }

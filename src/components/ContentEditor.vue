@@ -45,6 +45,14 @@ const props = defineProps({
    accessToken: {
     type: String,
     required: true
+   },
+   contentTitle: {
+    type: String,
+    required: true
+   },
+   bodyContent: {
+    type: String,
+    required: true
    } 
 });
 const colorArray = computed(()=>{
@@ -333,23 +341,9 @@ function issueDebug(){
  * lifecycle methods for VueJS components
  */
 onBeforeMount(()=>{
-    let {recordId, apiUrl, accessToken} = props;
-    if(recordId !== undefined && recordId !== null && apiUrl !== null && accessToken !== null) {
-        //create rest endpoint for MemorandumContent__c access
-        axios.get(recordApiUrl, {
-            headers:{
-                'Content-Type':'application/json',
-                'Authorization':`Bearer ${accessToken}`
-            }
-        }).then( response => {
-            editorData.value = (response.data?.Body__c !== undefined && response.data?.Body__c !== null)
-            ? response.data?.Body__c: '';
-            contentName.value  = response.data?.Name;
-        })
-    } else {
-        modalText.value = 'Unable to Retrieve Record.';
-        showModal.value = true;
-    }
+    let {recordId, apiUrl, accessToken, contentTitle, bodyContent} = props;
+    editorData.value = bodyContent;
+    contentName.value = contentTitle;
 })
 </script>
 
