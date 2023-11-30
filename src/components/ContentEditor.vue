@@ -361,32 +361,71 @@ onBeforeMount(()=>{
 </script>
 
 <template>
-    <div v-bind:class="{ 'modal': true, 'is-active': showModal }">
-        <div class="modal-background" v-on:click="closeModal"></div>
-        <div class="modal-content">
-            <div class="card">
-                <div class="card-container">
-                    <div class="m-6 p-6 has-text-centered">
-                        <span class="is-size-2 has-text-weight-bold">{{ modalText }}</span>
-                    </div>
-                </div>
+    <!-- BEGIN : Modal-->
+    <div role="dialog" tabindex="-1" v-bind:class="{ 'slds-modal': true, 'slds-fade-in-open': showModal }">
+        <div class="slds-modal__container">
+            <button class="slds-button slds-button_icon slds-modal__clase slds-button_icon-inverse">
+                <svg class="slds-button__icon ala-button__icon_large" aria-hidden="true">
+                    <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                </svg>
+                <span class="slds-assistive-text">Cancel and close</span>
+            </button>
+            <div class="slds-modal__content slds-p-around_medium slds-modal__content_headless">
+                <h2 class="slds-text-heading_large">{{ modalText }}</h2>
+            </div>
+            <div class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" aria-label="Cancel and close">Cancel</button>
+                <button class="slds-button slds-button_brand">Save</button>
             </div>
         </div>  
     </div>
-    <nav class="navbar">
-        <div class="navbar-item">
-            <h2 class="is-size-1 editor-title">{{  contentName  }}</h2>
-        </div>
-        <div class="navbar-end">
-            <button class="navbar-item button is-info is-medium mr-3" v-on:click="handleSave">Save</button>
-            <button class="navbar-item button is-medium is-danger" v-on:click="closeWindow">Close</button>
-            <button class="navbar-item button is-medium is-warning" v-on:click="issueDebug">Debug</button>
+    <!-- END : Modal-->
+
+
+    <nav class="slds-page-header">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title slds-truncate" v-bind:title="contentName">{{ contentName }}</span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <ul class="slds-button-group-list">
+                            <li>
+                                <button class="slds-button slds-button_brand" v-on:click="handleSave">Save</button>
+                            </li>
+                            <li>
+                                <button class="slds-button slds-button_neutral" v-on:click="closeWindow">Close</button>
+                            </li>
+                            <li>
+                                <button class="slds-button slds-button_text-destructive" v-on:click="issueDebug">Debug</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
     <ckeditor :editor="editor" v-model="editorData" :config="editorConfig" />
 </template>
 
 <style>
+    ul {
+        padding-inline-start: 40px !important;
+    }
     h2.editor-title{
         font-family: Poppins,sans-serif;
         font-weight: 700;

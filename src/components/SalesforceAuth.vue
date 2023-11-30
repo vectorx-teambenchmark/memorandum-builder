@@ -40,7 +40,7 @@ onBeforeMount(()=>{
 </script>
 
 <template>
-    <button v-if="!authStore.isAuthenticated" class="button is-link is-medium" v-on:click="authNavigation">Authorize With Salesforce</button>
+    <button v-if="!authStore.isAuthenticated" class="slds-button slds-button_brand" v-on:click="authNavigation">Authorize With Salesforce</button>
     <div v-else class="message is-success">
         <div class="message-header"><h2>Success</h2></div>
         <div class="message-body">
