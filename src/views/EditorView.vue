@@ -60,13 +60,16 @@ onBeforeMount(()=>{
         <ContentEditor v-if="hasRecordId && displayEditor" v-bind:access-token="authStore.bearerToken" 
             v-bind:api-url="authStore.apiUrl" v-bind:record-id="recordId" v-bind:content-title="contentTitle" 
             v-bind:body-content="contentBody"/>
-        <div v-if="!hasRecordId" class="modal is-active">
-            <div class="modal-background"></div>
-            <div class="modal-content">
-                <div class="box has-text-centered">
-                    <p class="is-size-2 ">No Record ID provided.</p>
+        <div v-if="!hasRecordId" aria-modal="true" aria-labelledby="modal-heading-01" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <div class="slds-modal__header">
+                    <h1 id="modal-heading-01" class="slds-modal__title slds-hyphenate">No Record ID</h1>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <p class="slds-text-align_center">No Record ID could be found, and therefore, no content can be loaded.</p>
                 </div>
             </div>
         </div>
+        <div v-if="!hasRecordId" class="slds-backdrop slds-backdrop_open" role="presentation"></div>
     </div>
 </template>

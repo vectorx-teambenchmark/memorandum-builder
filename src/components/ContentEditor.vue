@@ -362,9 +362,9 @@ onBeforeMount(()=>{
 
 <template>
     <!-- BEGIN : Modal-->
-    <div role="dialog" tabindex="-1" v-bind:class="{ 'slds-modal': true, 'slds-fade-in-open': showModal }">
+    <div v-if="showModal" role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
         <div class="slds-modal__container">
-            <button class="slds-button slds-button_icon slds-modal__clase slds-button_icon-inverse">
+            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse">
                 <svg class="slds-button__icon ala-button__icon_large" aria-hidden="true">
                     <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
                 </svg>
@@ -374,14 +374,14 @@ onBeforeMount(()=>{
                 <h2 class="slds-text-heading_large">{{ modalText }}</h2>
             </div>
             <div class="slds-modal__footer">
-                <button class="slds-button slds-button_neutral" aria-label="Cancel and close">Cancel</button>
-                <button class="slds-button slds-button_brand">Save</button>
+                <button class="slds-button slds-button_neutral" aria-label="Cancel and close">Close</button>
             </div>
         </div>  
     </div>
+    <div v-if="showModal" role="presentation" class="slds-backdrop slds-backdrop_open"></div>
     <!-- END : Modal-->
 
-
+    <!-- BEGIN : Header and Actions-->
     <nav class="slds-page-header">
         <div class="slds-page-header__row">
             <div class="slds-page-header__col-title">
@@ -419,6 +419,8 @@ onBeforeMount(()=>{
             </div>
         </div>
     </nav>
+    <!-- END : Header and Actions-->
+
     <ckeditor :editor="editor" v-model="editorData" :config="editorConfig" />
 </template>
 
@@ -426,7 +428,7 @@ onBeforeMount(()=>{
     ul {
         padding-inline-start: 40px !important;
     }
-    h2.editor-title{
+    h2.editor-title {
         font-family: Poppins,sans-serif;
         font-weight: 700;
     }
