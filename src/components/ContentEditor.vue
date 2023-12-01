@@ -317,7 +317,7 @@ const editorConfig = {
         'horizontalLine','outdent','indent','|','imageUpload','htmlEmbed','blockQuote','insertTable','mediaEmbed','insertTemplate',
         'specialCharacters','undo','redo','findAndReplace'
     ],
-    licenseKey: 'MktzKzlWWDEvSTdoOXV6TkhtY0RVVm0wMWlldTNtYzNPR2Y1dEVmWlJSaW9yQmhrcWRZQlJrb1RTUnl0LU1qQXlNekV4TWpFPQ==',
+    licenseKey: 'cFJaWmgyNFNzeS9OZ2N3ZzdRd3lnS0w3YUVUaUJGcWZVL0lHdTRxaTQxNjVvai9rbW1kYUVTSVJnTlZQLU1qQXlNekV5TVRZPQ==',
 };
 const editorData = ref('');
 const contentName = ref('');
