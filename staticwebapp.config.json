@@ -3,7 +3,8 @@
     "routes": [
         {
             "route":"/*",
-            "redirect":"/index.html"
+            "redirect":"/index.html",
+            "exclude":["*/assets/*","*.ico"]
         }
     ]
 }
