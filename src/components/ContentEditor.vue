@@ -45,6 +45,14 @@ const props = defineProps({
    accessToken: {
     type: String,
     required: true
+   },
+   contentTitle: {
+    type: String,
+    required: true
+   },
+   bodyContent: {
+    type: String,
+    required: true
    } 
 });
 const colorArray = computed(()=>{
@@ -196,13 +204,26 @@ const editorConfig = {
         options: [9,10,11,12,14,16,18,20,24,32,48,60]
     },
     image: {
+        insert: {
+            type:'block'
+        },
         toolbar: [
             'imageTextAlternative',
             'toggleImageCaption',
-            'imageStyle:inline',
-            'imageStyle:block',
-            'imageStyle:side',
-            'linkImage'
+            'linkImage',
+            '|',
+            {
+                name:'imageStyle:icons',
+                title:'Inline Alignment',
+                items:['imageStyle:inline','imageStyle:alignLeft','imageStyle:alignRight'],
+                defaultItem:'imageStyle:inline'
+            },
+            {
+                name:'imageStyle:pictures',
+                title:'Block Alignment',
+                items:['imageStyle:block','imageStyle:alignBlockLeft','imageStyle:alignBlockRight'],
+                defaultItem:'imageStyle:block'
+            }
         ]
     },
     mediaEmbed: {
@@ -296,7 +317,7 @@ const editorConfig = {
         'horizontalLine','outdent','indent','|','imageUpload','htmlEmbed','blockQuote','insertTable','mediaEmbed','insertTemplate',
         'specialCharacters','undo','redo','findAndReplace'
     ],
-    licenseKey: 'MktzKzlWWDEvSTdoOXV6TkhtY0RVVm0wMWlldTNtYzNPR2Y1dEVmWlJSaW9yQmhrcWRZQlJrb1RTUnl0LU1qQXlNekV4TWpFPQ==',
+    licenseKey: 'cFJaWmgyNFNzeS9OZ2N3ZzdRd3lnS0w3YUVUaUJGcWZVL0lHdTRxaTQxNjVvai9rbW1kYUVTSVJnTlZQLU1qQXlNekV5TVRZPQ==',
 };
 const editorData = ref('');
 const contentName = ref('');
@@ -333,54 +354,81 @@ function issueDebug(){
  * lifecycle methods for VueJS components
  */
 onBeforeMount(()=>{
-    let {recordId, apiUrl, accessToken} = props;
-    if(recordId !== undefined && recordId !== null && apiUrl !== null && accessToken !== null) {
-        //create rest endpoint for MemorandumContent__c access
-        axios.get(recordApiUrl, {
-            headers:{
-                'Content-Type':'application/json',
-                'Authorization':`Bearer ${accessToken}`
-            }
-        }).then( response => {
-            editorData.value = (response.data?.Body__c !== undefined && response.data?.Body__c !== null)
-            ? response.data?.Body__c: '';
-            contentName.value  = response.data?.Name;
-        })
-    } else {
-        modalText.value = 'Unable to Retrieve Record.';
-        showModal.value = true;
-    }
+    let {recordId, apiUrl, accessToken, contentTitle, bodyContent} = props;
+    editorData.value = bodyContent;
+    contentName.value = contentTitle;
 })
 </script>
 
 <template>
-    <div v-bind:class="{ 'modal': true, 'is-active': showModal }">
-        <div class="modal-background" v-on:click="closeModal"></div>
-        <div class="modal-content">
-            <div class="card">
-                <div class="card-container">
-                    <div class="m-6 p-6 has-text-centered">
-                        <span class="is-size-2 has-text-weight-bold">{{ modalText }}</span>
-                    </div>
-                </div>
+    <!-- BEGIN : Modal-->
+    <div v-if="showModal" role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse">
+                <svg class="slds-button__icon ala-button__icon_large" aria-hidden="true">
+                    <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                </svg>
+                <span class="slds-assistive-text">Cancel and close</span>
+            </button>
+            <div class="slds-modal__content slds-p-around_medium slds-modal__content_headless">
+                <h2 class="slds-text-heading_large">{{ modalText }}</h2>
+            </div>
+            <div class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" aria-label="Cancel and close">Close</button>
             </div>
         </div>  
     </div>
-    <nav class="navbar">
-        <div class="navbar-item">
-            <h2 class="is-size-1 editor-title">{{  contentName  }}</h2>
-        </div>
-        <div class="navbar-end">
-            <button class="navbar-item button is-info is-medium mr-3" v-on:click="handleSave">Save</button>
-            <button class="navbar-item button is-medium is-danger" v-on:click="closeWindow">Close</button>
-            <button class="navbar-item button is-medium is-warning" v-on:click="issueDebug">Debug</button>
+    <div v-if="showModal" role="presentation" class="slds-backdrop slds-backdrop_open"></div>
+    <!-- END : Modal-->
+
+    <!-- BEGIN : Header and Actions-->
+    <nav class="slds-page-header">
+        <div class="slds-page-header__row">
+            <div class="slds-page-header__col-title">
+                <div class="slds-media">
+                    <div class="slds-media__figure">
+
+                    </div>
+                    <div class="slds-media__body">
+                        <div class="slds-page-header__name">
+                            <div class="slds-page-header__name-title">
+                                <h1>
+                                    <span class="slds-page-header__title slds-truncate" v-bind:title="contentName">{{ contentName }}</span>
+                                </h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-page-header__col-actions">
+                <div class="slds-page-header__controls">
+                    <div class="slds-page-header__control">
+                        <ul class="slds-button-group-list">
+                            <li>
+                                <button class="slds-button slds-button_brand" v-on:click="handleSave">Save</button>
+                            </li>
+                            <li>
+                                <button class="slds-button slds-button_neutral" v-on:click="closeWindow">Close</button>
+                            </li>
+                            <li>
+                                <button class="slds-button slds-button_text-destructive" v-on:click="issueDebug">Debug</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
+    <!-- END : Header and Actions-->
+
     <ckeditor :editor="editor" v-model="editorData" :config="editorConfig" />
 </template>
 
 <style>
-    h2.editor-title{
+    ul {
+        padding-inline-start: 40px !important;
+    }
+    h2.editor-title {
         font-family: Poppins,sans-serif;
         font-weight: 700;
     }
