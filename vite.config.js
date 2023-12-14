@@ -1,8 +1,7 @@
 import { createRequire } from 'node:module'
-import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import ckeditor5 from '@ckeditor/vite-plugin-ckeditor5'
 
