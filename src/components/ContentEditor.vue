@@ -244,7 +244,7 @@ const editorConfig = {
         ]
     },
     simpleUpload: {
-        uploadUrl: 'https://us-central1-cloud-functions-test-397013.cloudfunctions.net/image-host'
+        uploadUrl: 'https://im-file-upload.azurewebsites.net/api/file-upload'
     },
     style: {
         definitions: [
