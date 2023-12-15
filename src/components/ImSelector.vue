@@ -13,7 +13,7 @@
             required: true
         }
     });
-    const emit = defineEmits(['unauthorized']);
+    const emit = defineEmits(['unauthorized','imselected']);
     const optionsArray = ref([]);
 
     const optionsReturned = computed(() => {
@@ -35,7 +35,7 @@
     function handleSelection(payload){
         optionsArray.value =[];
         searchTerm.value = '';
-        console.log('Payload: %s',JSON.stringify(payload,null,"\t"));
+        emit('imselected',payload);
     }
 
     //watchers

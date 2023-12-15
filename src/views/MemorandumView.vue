@@ -15,6 +15,14 @@
 
 <template>
     <div class="slds-container_large">
-        <ImSelector v-bind:api-token="authStore.bearerToken" v-bind:url-base="authStore.apiUrl" v-on:unauthorized.once="sendToAuthorization"/>
+        <div class="slds-grid slds-wrap slds-gutters_small">
+            <div class="slds-col slds-size_1-of-1">
+                <ImSelector v-bind:api-token="authStore.bearerToken" v-bind:url-base="authStore.apiUrl" 
+                    v-on:unauthorized.once="sendToAuthorization"/>
+            </div>
+            <div class="slds-col slds-size_1-of-1">
+
+            </div>
+        </div>
     </div>
 </template>
