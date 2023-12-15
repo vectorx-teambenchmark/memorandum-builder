@@ -244,7 +244,7 @@ const editorConfig = {
         ]
     },
     simpleUpload: {
-        uploadUrl: 'https://im-file-upload.azurewebsites.net/api/file-upload'
+        uploadUrl: import.meta.env.VITE_IMG_HOST_URL
     },
     style: {
         definitions: [
