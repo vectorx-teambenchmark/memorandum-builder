@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, defineEmits } from 'vue';
+import { onBeforeMount } from 'vue';
 import { useRoute } from 'vue-router';
 import useAuthStore from '../stores/auth';
 

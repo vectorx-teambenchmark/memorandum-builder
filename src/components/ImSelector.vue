@@ -71,7 +71,5 @@
 </script>
 
 <template>
-    <div class="slds-box slds-theme_default">
-        <Combobox label="Information Memorandum Search" placeholder="Search..." v-model="searchTerm" v-bind:options="optionsReturned" v-on:selection="handleSelection"/>
-    </div>
+    <Combobox label="Information Memorandum Search" placeholder="Search..." v-model="searchTerm" v-bind:options="optionsReturned" v-on:selection="handleSelection"/>
 </template>
