@@ -35,7 +35,6 @@
                 responseType: 'json',
                 headers: {'Authorization':`Bearer ${props.apiToken}`}
             });
-            console.log('Memorandum Version query Result: %s',JSON.stringify(response,null,"\t"));
             versionsAvailable.value = response.data.records.map((element)=>{
                 return { label:`${element.VersionName__c} (${element.Status__c})`, value:element.Id };
             });
