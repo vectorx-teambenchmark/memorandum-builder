@@ -1,7 +1,7 @@
 <script setup>
     import { ref, computed, watch } from 'vue'
     import axios from 'axios';
-    import Combobox from './Combobox.vue';
+    import ComboBox from './ComboBox.vue';
 
     const props = defineProps({
         apiToken: {
@@ -71,5 +71,5 @@
 </script>
 
 <template>
-    <Combobox label="Information Memorandum Search" placeholder="Search..." v-model="searchTerm" v-bind:options="optionsReturned" v-on:selection="handleSelection"/>
+    <ComboBox label="Information Memorandum Search" placeholder="Search..." v-model="searchTerm" v-bind:options="optionsReturned" v-on:selection="handleSelection"/>
 </template>
