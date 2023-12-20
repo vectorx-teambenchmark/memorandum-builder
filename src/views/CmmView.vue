@@ -23,7 +23,6 @@
     })
 
     function sendToAuthorization(){
-        console.log('Attempting Redirect');
         authStore.$reset();
         router.push({ name: 'home'});
     }
@@ -32,7 +31,6 @@
         selectedCmm.value = payload;
     }
     function handleVersionSelection(payload){
-        console.log('Payload: %s',JSON.stringify(payload,null,"\t"));
         selectedVersion.value = payload.selection;
     }
     function handleToggleNewVersionForm(){
@@ -47,7 +45,6 @@
                 data: recordInfo.detail,
                 headers: {'Authorization':`Bearer ${authStore.bearerToken}`}
             });
-            console.log('Insert Success: %s',JSON.stringify(response,null,"\t"));
             let newversion = {label:'New Record', value:response.data.id};
             selectedVersion.value = newversion;
             handleToggleNewVersionForm();   
@@ -58,7 +55,6 @@
 
     watch(selectedVersion,(newValue)=>{
         if(hasVersionSelection.value) {
-            console.log('Selected Version changed to: %s',JSON.stringify(newValue,null,"\t"));
             router.push({name:'memorandumversion',params:{recordId:newValue.value}});
         }
     });

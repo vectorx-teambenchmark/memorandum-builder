@@ -7,7 +7,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/:recordId*',
+      path: '/:recordId?',
       name: 'home',
       component: HomeView
     },
@@ -17,12 +17,12 @@ const router = createRouter({
       component: CmmView
     },
     {
-      path: '/editor/:recordId*',
+      path: '/editor/:recordId?',
       name: 'editor',
       component: () => import('../views/EditorView.vue')
     },
     {
-      path: '/memorandumversion/:recordId*',
+      path: '/memorandumversion/:recordId?',
       name: 'memorandumversion',
       component: MemorandumView
     }
