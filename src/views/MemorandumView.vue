@@ -22,6 +22,10 @@ const isRecordVersion = computed(()=>{
     return selectedRecord.value?.attributes?.type === 'MemorandumSection__c';
 });
 const selectedRecord = ref({});
+const isLastSection = computed(()=>{
+    let selectedIndex = sectionInfo.value.findIndex( item => item.Id === selectedRecord.value.Id );
+    return selectedIndex === sectionInfo.value.length - 1;
+});
 
 function updateSelectedRecord(event){
     selectedRecord.value = event.detail;
@@ -55,6 +59,8 @@ function handleMoveSectionUp(sectionId){
             item.Order__c = count;
             count++;
         });
+        //update the reordering
+        updateSections(sectionInfo.value);
     }
 }
 function handleMoveSectionDown(sectionId){
@@ -67,7 +73,30 @@ function handleMoveSectionDown(sectionId){
             item.Order__c = count;
             count++;
         });
+        //update the reordering
+        updateSections(sectionInfo.value);
     }
+}
+
+async function updateSections(sectionArray) {
+    let payload = {allOrNone:true,records:[]};
+    payload.records = sectionArray.map(element =>{
+        let retObj = {attributes:element.attributes,Id:element.Id,Order__c:element.Order__c};
+        return retObj;
+    });
+    let updateEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/composite/sobjects/`;
+    try {
+        let result = await axios({
+            method:'patch',
+            url:updateEndpoint,
+            data:payload,
+            headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
+        });
+        console.log('Update Result: %s',JSON.stringify(result,null,"\t"));
+    } catch(e) {
+        console.log('Error: %s',JSON.stringify(e,null,"\t"));
+    }
+
 }
 
 
@@ -138,7 +167,7 @@ onBeforeMount(async () => {
         </div>
         <div class="slds-col slds-size_4-of-5 slds-var-p-around_small">
             <SectionManager v-if="isRecordVersion" v-bind:api-token="authStore.bearerToken"
-                v-bind:url-base="authStore.apiUrl" v-bind:section-id="selectedRecord.Id" v-on:sectionupdate="obtainSections"
+                v-bind:url-base="authStore.apiUrl" v-bind:section-id="selectedRecord.Id" v-bind:is-last="isLastSection" v-on:sectionupdate="obtainSections"
                 v-on:movesectionup="handleMoveSectionUp" v-on:movesectiondown="handleMoveSectionDown"/>
         </div>
     </div>

@@ -14,6 +14,12 @@ const props = defineProps({
     sectionId: {
         type: String,
         required: true
+    },
+    isLast: {
+        type: Boolean,
+        default(){
+            return false;
+        }
     }
 });
 const emit = defineEmits(['sectionupdate','movesectionup','movesectiondown']);
@@ -23,6 +29,9 @@ const contentArray = ref([]);
 const showEditSectionForm = ref(false);
 const currentSectionId = computed(()=>{
     return props.sectionId;
+})
+const isFirstSection = computed(()=>{
+    return sectionInfo.value.Order__c <= 1;
 })
 function cancelRename(){
     sectionName.value = sectionInfo.value.Name;
@@ -94,8 +103,8 @@ onBeforeMount(()=>{
                 <div class="slds-no-flex">
                     <div class="slds-button-group">
                         <button class="slds-button slds-button_brand" v-on:click="showEditSectionForm = !showEditSectionForm">{{ (showEditSectionForm) ? 'Cancel Rename':'Rename Section'}}</button>
-                        <button class="slds-button slds-button_neutral" v-on:click="emit('movesectionup',currentSectionId)">Move Section Up</button>
-                        <button class="slds-button slds-button_neutral" v-on:click="emit('movesectiondown',currentSectionId)">Move Section Down</button>
+                        <button class="slds-button slds-button_neutral" v-on:click="emit('movesectionup',currentSectionId)" v-bind:disabled="isFirstSection">Move Section Up</button>
+                        <button class="slds-button slds-button_neutral" v-on:click="emit('movesectiondown',currentSectionId)" v-bind:disabled="props.isLast">Move Section Down</button>
                         <button class="slds-button slds-button_brand">Clone Section</button>
                         <button class="slds-button slds-button_destructive">Delete Section</button>
                     </div>
