@@ -61,7 +61,7 @@
                         <span v-if="selectedVal?.detail === undefined" 
                             class="slds-icon_container slds-icon-utility-search slds-input__icon slds-input__icon_right">
                             <svg class="slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true">
-                                <use xlink:href="/src/assets/icons/utility-sprint/svg/symbols.svg#search"></use>
+                                <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#search"></use>
                             </svg>
                         </span>
 

@@ -32,6 +32,7 @@ onBeforeMount(()=>{
         },{}); 
         authStore.setToken(hashInfo?.access_token);
         authStore.setApiUrl(hashInfo?.instance_url);
+        authStore.setIdUrl(hashInfo?.id);
         route.params.recordId = hashInfo?.state;
     }
     if(authStore.isAuthenticated){
