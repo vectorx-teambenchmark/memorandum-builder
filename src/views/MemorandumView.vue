@@ -90,6 +90,7 @@ onBeforeMount(async () => {
                 responseType:'json',
                 headers:{'authorization':`Bearer ${authStore.bearerToken}`}
             });
+            console.log('Memorandum Version Data: %s',JSON.stringify(versionResponse,null,"\t"));
             versionInfo.value = versionResponse.data;
             refreshVersionSections();
             refreshVersionContents();
