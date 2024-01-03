@@ -13,15 +13,16 @@ const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
 
-const recordId = computed(()=>{
-    return route.params?.recordId;
-});
-
 const versionInfo = ref({});
 const versionDisplayToc = ref(true);
 const versionSections = ref([]);
 const versionContents = ref([]);
 const selectedRecord = ref({});
+const requestSubmitted = ref(false);
+
+const recordId = computed(()=>{
+    return route.params?.recordId;
+});
 const queryEndpoint = computed(()=>{
     return `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=`;
 });
@@ -31,6 +32,7 @@ const isSectionSelected = computed(()=>{
 const isContentSelected = computed(()=>{
     return selectedRecord.value?.attributes?.type === 'MemorandumContent__c';
 });
+
 function handleCalloutException(e) {
     switch(e.response.status) {
         case 401:
@@ -41,7 +43,6 @@ function handleCalloutException(e) {
             console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
     }
 }
-
 function handleRecordSelection(selectionId){
     let identifiedRecord = versionSections.value.find(section => section.Id === selectionId);
     if(identifiedRecord === undefined) {
@@ -50,6 +51,23 @@ function handleRecordSelection(selectionId){
     selectedRecord.value = identifiedRecord;
 }
 
+async function determineApprovalStatus() {
+    if(recordId.value === undefined){
+        return;
+    }
+    let processInstanceQuery = encodeURIComponent(`SELECT Id, LastActorId, Status FROM ProcessInstance WHERE TargetObjectId ='${recordId.value}'`);
+    let processInstanceEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${processInstanceQuery}`;
+    try {
+        let processInstanceResponse = await axios.get(processInstanceEndpoint,{responseType:'json',headers:{'authorization':`Bearer ${authStore.bearerToken}`}});
+        for(let processInstanceRec of processInstanceResponse.data.records) {
+            if(processInstanceRec.Status === 'Pending'){
+                requestSubmitted.value = true;
+            }
+        }
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
 async function refreshVersionSections(){
     let sectionQuery = encodeURIComponent(`SELECT Id, Name, Order__c FROM MemorandumSection__c WHERE Parent__c ='${recordId.value}' ORDER BY Order__c ASC`);
     let sectionEndpoint = queryEndpoint.value + sectionQuery;
@@ -105,6 +123,7 @@ onBeforeMount(async () => {
             versionInfo.value = versionResponse.data;
             refreshVersionSections();
             refreshVersionContents();
+            determineApprovalStatus();
         } catch(e) {
             handleCalloutException(e);
         }
@@ -115,7 +134,7 @@ onBeforeMount(async () => {
 <template>
     <div class="slds-grid slds-wrap">
         <div class="slds-col slds-size_1-of-1 slds-var-p-around_x-small">
-            <VersionHeading v-bind:version-id="versionInfo.Id" v-model:toc-display="versionDisplayToc"/>
+            <VersionHeading v-bind:version-id="versionInfo.Id" v-bind:allow-approval-request-submittal="requestSubmitted" v-model:toc-display="versionDisplayToc"/>
         </div>
         <div class="slds-col slds-size_1-of-1 slds-var-p-around_small ">
             <VersionProcessManager v-bind:version-id="versionInfo.Id"/>

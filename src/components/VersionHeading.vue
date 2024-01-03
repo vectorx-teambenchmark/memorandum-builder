@@ -10,20 +10,26 @@ const props = defineProps({
         required: true
     },
     tocDisplay:{
-        Boolean,
+        type:Boolean,
+        default(){
+            return false;
+        }
+    },
+    allowApprovalRequestSubmittal:{
+        type:Boolean,
         default(){
             return false;
         }
     }
 });
-const emit = defineEmits(['update:tocDisplay']);
+const emit = defineEmits(['update:tocDisplay','approvalRequestSubmitted']);
 const authStore = useAuthStore();
 const router = useRouter();
 
 const approvalProcessId = ref('');
 const approvalProcessName = ref('');
 const memorandumVersion = ref({});
-const requestSubmitted = ref(false);
+const approverId = ref('');
 
 //computed properties
 const tocToggleButtonLabel = computed(()=>{
@@ -40,8 +46,10 @@ const versionStatus = computed(()=>{
 });
 const canonicalVersionNumber = computed(()=>{
     return memorandumVersion.value.CanonicalVersion__c;
-})
-
+});
+const requestSubmitted = computed(()=>{
+    return props.allowApprovalRequestSubmittal;
+});
 
 // functions
 function handleCalloutException(e) {
@@ -77,6 +85,22 @@ async function obtainMemorandumVersionInfo(versionIdIn){
         handleCalloutException(e);
     }
 }
+async function determineDefaultApproverId(versionIdIn){
+    if(versionIdIn === undefined || versionIdIn === null || versionIdIn.length === 0) {
+        return;
+    }
+    let approverQuery = encodeURIComponent(`SELECT Id, ParentMarketingMaterial__r.Opportunity__r.DT_Managing_Director__c FROM MemorandumVersion__c WHERE Id ='${versionIdIn}'`);
+    let approverUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${approverQuery}`;
+    try {
+        let approverResponse = await axios.get(approverUrl,{headers:{'authorization':`Bearer ${authStore.bearerToken}`},responseType:'json'});
+        let approverResponseId = approverResponse.data.records[0]?.ParentMarketingMaterial__r?.Opportunity__r?.DT_Managing_Director__c;
+        approverId.value = (approverResponseId === undefined || approverResponseId === null) ? import.meta.env.VITE_SALESFORCE_DEFAULT_APPROVER : approverResponseId;
+        console.log('Approver ID Value: %s',JSON.stringify(approverId.value,null,"\t"));
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
+/*
 async function determineApprovalStatus(versionIdIn) {
     if(versionIdIn === undefined){
         return;
@@ -86,7 +110,6 @@ async function determineApprovalStatus(versionIdIn) {
     try {
         let processInstanceResponse = await axios.get(processInstanceEndpoint,{responseType:'json',headers:{'authorization':`Bearer ${authStore.bearerToken}`}});
         for(let processInstanceRec of processInstanceResponse.data.records) {
-            console.log('Process Instance has run.');
             if(processInstanceRec.Status === 'Pending'){
                 requestSubmitted.value = true;
             }
@@ -95,12 +118,13 @@ async function determineApprovalStatus(versionIdIn) {
         handleCalloutException(e);
     }
 }
+*/
 async function handleSubmitApprovalRequest() {
     //get the currentuser's Id
     let currentUserUri = new URL(authStore.idUrl);
     let currentUserId = currentUserUri.pathname.split('/').pop();
     //build the post object - based on the information from https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_process_approvals_post.htm
-    let dataObj = {requests:[{ actionType:'Submit', contextActorId: currentUserId, contextId: versionId.value, processDefinitionNameOrId: approvalProcessId.value }]};
+    let dataObj = {requests:[{ actionType:'Submit', contextActorId: currentUserId, contextId: versionId.value, nextApproverIds:[approverId.value], processDefinitionNameOrId: approvalProcessId.value }]};
     //make the post to the approvals endpoint.
     try {
         let approvalRequestEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
@@ -109,6 +133,7 @@ async function handleSubmitApprovalRequest() {
             responseType:'json'
         });
         console.log('Response to Approval Request: %s',JSON.stringify(approvalRequestResponse,null,"\t"));
+        //determineApprovalStatus(versionId.value);
     } catch(e) {
         console.log('Error Submitting Approval Request: %s',JSON.stringify(e,null,"\t"));
     }
@@ -116,7 +141,8 @@ async function handleSubmitApprovalRequest() {
 
 //watchers
 watch(versionId,(newValue)=>{
-    determineApprovalStatus(newValue);
+    determineDefaultApproverId(newValue);
+    //determineApprovalStatus(newValue);
     obtainMemorandumVersionInfo(newValue);
 });
 
