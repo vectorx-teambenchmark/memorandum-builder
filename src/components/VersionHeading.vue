@@ -100,25 +100,7 @@ async function determineDefaultApproverId(versionIdIn){
         handleCalloutException(e);
     }
 }
-/*
-async function determineApprovalStatus(versionIdIn) {
-    if(versionIdIn === undefined){
-        return;
-    }
-    let processInstanceQuery = encodeURIComponent(`SELECT Id, LastActorId, Status FROM ProcessInstance WHERE TargetObjectId ='${versionIdIn}' AND ProcessDefinitionId = '${approvalProcessId.value}'`);
-    let processInstanceEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${processInstanceQuery}`;
-    try {
-        let processInstanceResponse = await axios.get(processInstanceEndpoint,{responseType:'json',headers:{'authorization':`Bearer ${authStore.bearerToken}`}});
-        for(let processInstanceRec of processInstanceResponse.data.records) {
-            if(processInstanceRec.Status === 'Pending'){
-                requestSubmitted.value = true;
-            }
-        }
-    } catch(e) {
-        handleCalloutException(e);
-    }
-}
-*/
+
 async function handleSubmitApprovalRequest() {
     //get the currentuser's Id
     let currentUserUri = new URL(authStore.idUrl);
@@ -128,12 +110,11 @@ async function handleSubmitApprovalRequest() {
     //make the post to the approvals endpoint.
     try {
         let approvalRequestEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
-        let approvalRequestResponse = await axios.post(approvalRequestEndpoint,dataObj,{
+        await axios.post(approvalRequestEndpoint,dataObj,{
             headers:{'authorization':`Bearer ${authStore.bearerToken}`},
             responseType:'json'
         });
-        console.log('Response to Approval Request: %s',JSON.stringify(approvalRequestResponse,null,"\t"));
-        //determineApprovalStatus(versionId.value);
+        emit('approvalRequestSubmitted');
     } catch(e) {
         console.log('Error Submitting Approval Request: %s',JSON.stringify(e,null,"\t"));
     }
@@ -142,7 +123,6 @@ async function handleSubmitApprovalRequest() {
 //watchers
 watch(versionId,(newValue)=>{
     determineDefaultApproverId(newValue);
-    //determineApprovalStatus(newValue);
     obtainMemorandumVersionInfo(newValue);
 });
 
