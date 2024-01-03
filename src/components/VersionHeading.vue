@@ -95,7 +95,6 @@ async function determineDefaultApproverId(versionIdIn){
         let approverResponse = await axios.get(approverUrl,{headers:{'authorization':`Bearer ${authStore.bearerToken}`},responseType:'json'});
         let approverResponseId = approverResponse.data.records[0]?.ParentMarketingMaterial__r?.Opportunity__r?.DT_Managing_Director__c;
         approverId.value = (approverResponseId === undefined || approverResponseId === null) ? import.meta.env.VITE_SALESFORCE_DEFAULT_APPROVER : approverResponseId;
-        console.log('Approver ID Value: %s',JSON.stringify(approverId.value,null,"\t"));
     } catch(e) {
         handleCalloutException(e);
     }
@@ -106,7 +105,14 @@ async function handleSubmitApprovalRequest() {
     let currentUserUri = new URL(authStore.idUrl);
     let currentUserId = currentUserUri.pathname.split('/').pop();
     //build the post object - based on the information from https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_process_approvals_post.htm
-    let dataObj = {requests:[{ actionType:'Submit', contextActorId: currentUserId, contextId: versionId.value, nextApproverIds:[approverId.value], processDefinitionNameOrId: approvalProcessId.value }]};
+    let dataObj = {
+        requests:[
+            { 
+                actionType:'Submit', 
+                contextActorId: currentUserId, 
+                contextId: versionId.value, 
+                nextApproverIds:[approverId.value], 
+                processDefinitionNameOrId: approvalProcessId.value }]};
     //make the post to the approvals endpoint.
     try {
         let approvalRequestEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;

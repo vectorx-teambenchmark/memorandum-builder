@@ -9,6 +9,13 @@ const props = defineProps({
     sectionId: {
         type: String,
         required: true
+    },
+    restrictEditing: {
+        type: Boolean,
+        required: true,
+        default(){
+            return false;
+        }
     }
 });
 const emit = defineEmits(['sectionupdate','sectiondelete','contentselection','contentupdate']);
@@ -21,6 +28,9 @@ const showEditSectionForm = ref(false);
 const currentSectionId = computed(()=>{
     return props.sectionId;
 });
+const allowEditing = computed(()=>{
+    return ! props.restrictEditing;
+})
 
 function handleCalloutException(e) {
     switch(e.response.status) {
@@ -204,7 +214,7 @@ onBeforeMount(async ()=>{
                     </h2>
                 </div>
                 <div class="slds-no-flex">
-                    <div class="slds-button-group">
+                    <div v-if="allowEditing" class="slds-button-group">
                         <button class="slds-button slds-button_brand" v-on:click="showEditSectionForm = !showEditSectionForm">{{ (showEditSectionForm) ? 'Cancel Rename':'Rename Section'}}</button>
                         <button class="slds-button slds-button_neutral" v-on:click="handleMoveSectionUp" v-bind:disabled="sectionInfo.isFirst">Move Section Up</button>
                         <button class="slds-button slds-button_neutral" v-on:click="handleMoveSectionDown" v-bind:disabled="sectionInfo.isLast">Move Section Down</button>
@@ -230,7 +240,7 @@ onBeforeMount(async ()=>{
                         <button class="slds-button slds-button_destructive" v-on:click="cancelRename">Cancel</button>
                     </div>
                 </div>
-                <ContentManager v-bind:section-id="currentSectionId" v-on:contentselection="emit('contentselection',$event)" v-on:contentupdate="emit('contentupdate')"/>
+                <ContentManager v-bind:restrict-editing="!allowEditing" v-bind:section-id="currentSectionId" v-on:contentselection="emit('contentselection',$event)" v-on:contentupdate="emit('contentupdate')"/>
             </div>
         </div>
     </article>
