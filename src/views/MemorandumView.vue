@@ -52,13 +52,14 @@ function handleRecordSelection(selectionId){
 }
 
 async function determineApprovalStatus() {
-    if(recordId.value === undefined){
+    if(recordId.value === undefined || recordId.value?.length === 0){
         return;
     }
     let processInstanceQuery = encodeURIComponent(`SELECT Id, LastActorId, Status FROM ProcessInstance WHERE TargetObjectId ='${recordId.value}'`);
     let processInstanceEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${processInstanceQuery}`;
     try {
         let processInstanceResponse = await axios.get(processInstanceEndpoint,{responseType:'json',headers:{'authorization':`Bearer ${authStore.bearerToken}`}});
+        requestSubmitted.value = false;
         for(let processInstanceRec of processInstanceResponse.data.records) {
             if(processInstanceRec.Status === 'Pending'){
                 requestSubmitted.value = true;
@@ -89,7 +90,6 @@ async function refreshVersionSections(){
     }
 }
 async function refreshVersionContents(){
-    console.log('refreshVersionContents executed.');
     let contentsQuery = encodeURIComponent(`SELECT Id, Name, Order__c, Parent__c, Body__c FROM MemorandumContent__c WHERE Parent__r.Parent__c ='${recordId.value}' ORDER BY Order__c ASC`);
     let contentsEndpoint = queryEndpoint.value + contentsQuery;
     try {
@@ -137,7 +137,7 @@ onBeforeMount(async () => {
             <VersionHeading v-bind:version-id="versionInfo.Id" v-bind:allow-approval-request-submittal="requestSubmitted" v-model:toc-display="versionDisplayToc" v-on:approval-request-submitted="determineApprovalStatus"/>
         </div>
         <div v-if="requestSubmitted" class="slds-col slds-size_1-of-1 slds-var-p-around_small ">
-            <VersionProcessManager v-bind:version-id="versionInfo.Id"/>
+            <VersionProcessManager v-bind:version-id="versionInfo.Id" v-on:approval-process-status-change="determineApprovalStatus"/>
         </div>
         <div v-if="versionDisplayToc" class="slds-col slds-size_1-of-5 slds-var-p-around_small">
             <VersionTocManager v-bind:sections="versionSections" v-bind:contents="versionContents" 
@@ -145,7 +145,8 @@ onBeforeMount(async () => {
         </div>
         <div v-bind:class="{'slds-col':true, 'slds-size_1-of-1':!versionDisplayToc,'slds-size_4-of-5':versionDisplayToc,'slds-var-p-around_small':true}">
             <SectionManager v-if="isSectionSelected" v-bind:section-id="selectedRecord.Id" v-on:sectionupdate="refreshVersionSections" 
-                v-on:sectiondelete="refreshVersionSections" v-on:contentselection="handleRecordSelection" v-on:contentupdate="refreshVersionContents"/>
+                v-bind:restrict-editing="requestSubmitted" v-on:sectiondelete="refreshVersionSections" v-on:contentselection="handleRecordSelection" 
+                v-on:contentupdate="refreshVersionContents"/>
             <ContentEditor v-if="isContentSelected" v-bind:record-id="selectedRecord.Id" v-bind:api-url="authStore.apiUrl" v-bind:access-token="authStore.bearerToken"
                 v-bind:id-url="authStore.idUrl" v-bind:content-title="selectedRecord.Name" v-bind:body-content="selectedRecord.Body__c"/>
         </div>

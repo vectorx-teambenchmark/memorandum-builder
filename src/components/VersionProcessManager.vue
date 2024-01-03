@@ -9,12 +9,14 @@ const props = defineProps({
         type: String
     }
 });
+const emit = defineEmits(['approvalProcessStatusChange']);
 const authStore = useAuthStore();
 const router = useRouter();
 
 const processInstanceArray = ref([]);
 const activeProcessDefinitionId = ref('');
 const activeContextId = ref('');
+const activeActorId = ref('');
 
 //computed property
 const versionId = computed(()=>{
@@ -33,7 +35,7 @@ function handleCalloutException(e) {
     }
 }
 async function obtainActiveProcessInstanceInfo(versionIdIn) {
-    let piQueryInfo = encodeURIComponent(`SELECT Id, LastActorId, LastActor.Name, ProcessDefinitionId, ProcessDefinition.Name, Status, (SELECT ActorId, Comments, StepStatus FROM Steps) FROM ProcessInstance WHERE TargetObjectId = '${versionIdIn}'`);
+    let piQueryInfo = encodeURIComponent(`SELECT Id, LastActorId, LastActor.Name, ProcessDefinitionId, ProcessDefinition.Name, Status, (SELECT ActorId, Comments, StepStatus FROM Steps), (SELECT Id, ActorId, ProcessInstanceId FROM Workitems) FROM ProcessInstance WHERE TargetObjectId = '${versionIdIn}' ORDER By LastModifiedDate DESC`);
     let piQueryInfoUri = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${piQueryInfo}`;
     try {
         let piQueryInfoResponse = await axios.get(piQueryInfoUri,{
@@ -43,7 +45,8 @@ async function obtainActiveProcessInstanceInfo(versionIdIn) {
         processInstanceArray.value = piQueryInfoResponse.data.records.map(( record ) => {
             if(record.Status === 'Pending') {
                 activeProcessDefinitionId.value = record.ProcessDefinitionId;
-                activeContextId.value = record.Id;
+                activeContextId.value = record.Workitems.records[0]?.Id;
+                activeActorId.value = record.Workitems.records[0]?.ActorId;
             }
             return { 
                 'id':record.Id,
@@ -62,16 +65,16 @@ async function rejectApprovalStep(){
     //let currentUserId = userUrl.pathname.split('/').pop();
     let rejectionData = {requests:[{ 
         actionType:'Reject', 
-        contextId:versionId.value, 
+        contextId:activeContextId.value, 
         comments:'Rejected in CKEditor App.'
     }]};
     try {
-        let rejectionResponse = await axios.post(rejectionInfoUri,rejectionData,{
+        await axios.post(rejectionInfoUri,rejectionData,{
             headers:{'authorization':`Bearer ${authStore.bearerToken}`},
             responseType:'json'
         });
+        emit('approvalProcessStatusChange');
         obtainActiveProcessInstanceInfo(versionId.value);
-        console.log('Rejection Response: %s',JSON.stringify(rejectionResponse,null,"\t"));
     } catch(e) {
         handleCalloutException(e);
     } 
@@ -80,15 +83,16 @@ async function approveApprovalStep(){
     let approvalInfoUri = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
     let approvalData = {requests:[{
         actionType:'Approve',
-        contextId:versionId.value,
+        contextId:activeContextId.value,
         comments:'Approved in CKEditor App.'
     }]};
+    console.log('The Approval Request Being Sent: %s',JSON.stringify(approvalData,null,"\t"));
     try {
-        let approvalResponse = await axios.post(approvalInfoUri,approvalData,{
+        await axios.post(approvalInfoUri,approvalData,{
             headers:{'authorization':`Bearer ${authStore.bearerToken}`},
             responseType:'json'
         });
-        console.log('Approval Response: %s',JSON.stringify(approvalResponse,null,"\t"));
+        emit('approvalProcessStatusChange');
         obtainActiveProcessInstanceInfo(versionId.value);
     } catch(e) {
         handleCalloutException(e);

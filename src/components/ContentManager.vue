@@ -9,6 +9,13 @@ const props = defineProps({
     sectionId: {
         type: String,
         required: true
+    },
+    restrictEditing: {
+        type: Boolean,
+        required: true,
+        default(){
+            return false;
+        }
     }
 });
 const emit = defineEmits(['contentselection','contentupdate']);
@@ -17,6 +24,9 @@ const router = useRouter();
 const currentSectionId = computed(()=>{
     return props.sectionId;
 });
+const allowEditing = computed(()=>{
+    return !props.restrictEditing;
+})
 const contentArray = ref([]);
 const showNewContentForm = ref(false);
 const newContentDisplayName = ref(false);
@@ -183,11 +193,11 @@ onBeforeMount(async ()=>{
                 </span>
             </div>
             <div class="slds-col slds-size_1-of-3">
-                <Toggle label="Display Name As Title" active-label="Display" inactive-label="Hide" v-model="contentItem.DisplayRecordName__c"
+                <Toggle v-if="allowEditing" label="Display Name As Title" active-label="Display" inactive-label="Hide" v-model="contentItem.DisplayRecordName__c"
                     v-on:change="updateDisplayNameOnToggle(contentItem.Id,contentItem.DisplayRecordName__c)"/>
             </div>
             <div class="slds-col sls-size_1-of-3 slds-text-align_right">
-                <div class="slds-button-group">
+                <div v-if="allowEditing" class="slds-button-group">
                     <button class="slds-button slds-button_brand" v-on:click="emit('contentselection',contentItem.Id)">Edit Content</button>
                     <button class="slds-button slds-button_neutral" v-bind:disabled="contentItem.isFirst" v-on:click="handleMoveContentUp(contentItem.Id)">Move Content Up</button>
                     <button class="slds-button slds-button_neutral" v-bind:disabled="contentItem.isLast" v-on:click="handleMoveContentDown(contentItem.Id)">Move Content Down</button>
@@ -197,7 +207,7 @@ onBeforeMount(async ()=>{
         </div>
     </div>
     <div class="slds-col slds-size_1-of-1 slds-var-m-top_medium slds-var-p-horizontal_small slds-var-m-bottom_small">
-        <button v-bind:class="{ 'slds-button':true, 'slds-button_brand':!showNewContentForm, 'slds-button_destructive':showNewContentForm }" v-on:click="showNewContentForm = !showNewContentForm">{{ (showNewContentForm) ? 'Cancel':'New Content'}}</button>
+        <button v-if="allowEditing" v-bind:class="{ 'slds-button':true, 'slds-button_brand':!showNewContentForm, 'slds-button_destructive':showNewContentForm }" v-on:click="showNewContentForm = !showNewContentForm">{{ (showNewContentForm) ? 'Cancel':'New Content'}}</button>
     </div>
     <div v-if="showNewContentForm" class="slds-col slds-size_1-of-1 slds-theme_inverse slds-var-p-horizontal_small slds-var-p-vertical_x-small">
         <div class="slds-grid slds-wrap">
