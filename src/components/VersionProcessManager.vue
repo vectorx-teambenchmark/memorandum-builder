@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
@@ -13,6 +13,8 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const processInstanceArray = ref([]);
+const activeProcessDefinitionId = ref('');
+const activeContextId = ref('');
 
 //computed property
 const versionId = computed(()=>{
@@ -39,6 +41,10 @@ async function obtainActiveProcessInstanceInfo(versionIdIn) {
             responseType:'json'
         });
         processInstanceArray.value = piQueryInfoResponse.data.records.map(( record ) => {
+            if(record.Status === 'Pending') {
+                activeProcessDefinitionId.value = record.ProcessDefinitionId;
+                activeContextId.value = record.Id;
+            }
             return { 
                 'id':record.Id,
                 'processName':record.ProcessDefinition?.Name, 
@@ -50,11 +56,57 @@ async function obtainActiveProcessInstanceInfo(versionIdIn) {
         handleCalloutException(e);
     }
 }
+async function rejectApprovalStep(){
+    let rejectionInfoUri = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
+    //let userUrl = new URL(authStore.idUrl);
+    //let currentUserId = userUrl.pathname.split('/').pop();
+    let rejectionData = {requests:[{ 
+        actionType:'Reject', 
+        contextId:versionId.value, 
+        comments:'Rejected in CKEditor App.'
+    }]};
+    try {
+        let rejectionResponse = await axios.post(rejectionInfoUri,rejectionData,{
+            headers:{'authorization':`Bearer ${authStore.bearerToken}`},
+            responseType:'json'
+        });
+        obtainActiveProcessInstanceInfo(versionId.value);
+        console.log('Rejection Response: %s',JSON.stringify(rejectionResponse,null,"\t"));
+    } catch(e) {
+        handleCalloutException(e);
+    } 
+}
+async function approveApprovalStep(){
+    let approvalInfoUri = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
+    let approvalData = {requests:[{
+        actionType:'Approve',
+        contextId:versionId.value,
+        comments:'Approved in CKEditor App.'
+    }]};
+    try {
+        let approvalResponse = await axios.post(approvalInfoUri,approvalData,{
+            headers:{'authorization':`Bearer ${authStore.bearerToken}`},
+            responseType:'json'
+        });
+        console.log('Approval Response: %s',JSON.stringify(approvalResponse,null,"\t"));
+        obtainActiveProcessInstanceInfo(versionId.value);
+    } catch(e) {
+        handleCalloutException(e);
+    }
+
+}
 
 //watchers
 watch(versionId, (newValue) => {
+    console.log('watcher initiated.');
     obtainActiveProcessInstanceInfo(newValue);
 });
+//lifecycle functions
+onBeforeMount(()=>{
+    if(versionId.value !== undefined && versionId.value.length > 0){
+        obtainActiveProcessInstanceInfo(versionId.value);
+    }
+})
 </script>
 
 <template>
@@ -70,6 +122,9 @@ watch(versionId, (newValue) => {
                 <th class="" scope="col">
                     <div class="slds-truncate" title="Status">Status</div>
                 </th>
+                <th class="" scope="col">
+                    <div class="slds-truncate" title="Actions">Actions</div>
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -82,6 +137,20 @@ watch(versionId, (newValue) => {
                 </td>
                 <td data-label="Status">
                     <div class="slds-truncate" v-bind:title="item.status">{{ item.status }}</div>
+                </td>
+                <td data-label="Actions">
+                    <div v-if=" item.status === 'Pending' " class="slds-truncate">
+                        <button class="slds-button slds-button_icon slds-button_icon-brand" v-on:click="approveApprovalStep" title="Approve">
+                            <svg class="slds-button__icon" aria-hidden="true">
+                                <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#check"></use>
+                            </svg>
+                        </button>
+                        <button class="slds-button slds-button_icon slds-button_icon-brand" v-on:click="rejectApprovalStep" title="Reject">
+                            <svg class="slds-button__icon" aria-hiddn="true">
+                                <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                            </svg>
+                        </button>
+                    </div>
                 </td>
             </tr>
         </tbody>

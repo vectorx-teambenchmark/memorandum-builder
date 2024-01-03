@@ -134,9 +134,9 @@ onBeforeMount(async () => {
 <template>
     <div class="slds-grid slds-wrap">
         <div class="slds-col slds-size_1-of-1 slds-var-p-around_x-small">
-            <VersionHeading v-bind:version-id="versionInfo.Id" v-bind:allow-approval-request-submittal="requestSubmitted" v-model:toc-display="versionDisplayToc"/>
+            <VersionHeading v-bind:version-id="versionInfo.Id" v-bind:allow-approval-request-submittal="requestSubmitted" v-model:toc-display="versionDisplayToc" v-on:approval-request-submitted="determineApprovalStatus"/>
         </div>
-        <div class="slds-col slds-size_1-of-1 slds-var-p-around_small ">
+        <div v-if="requestSubmitted" class="slds-col slds-size_1-of-1 slds-var-p-around_small ">
             <VersionProcessManager v-bind:version-id="versionInfo.Id"/>
         </div>
         <div v-if="versionDisplayToc" class="slds-col slds-size_1-of-5 slds-var-p-around_small">
