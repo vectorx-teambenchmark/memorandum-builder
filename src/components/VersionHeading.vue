@@ -1,14 +1,13 @@
 <script setup>
-import { computed, onBeforeMount, ref } from 'vue';
+import { computed, onBeforeMount, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
 
 const props = defineProps({
-    versionInfo:{
-        type: Object,
-        default(){
-            return { VersionName__c:'N/A'}
-        }
+    versionId:{
+        type:String,
+        required: true
     },
     tocDisplay:{
         Boolean,
@@ -19,18 +18,83 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:tocDisplay']);
 const authStore = useAuthStore();
+const router = useRouter();
 
 const approvalProcessId = ref('');
 const approvalProcessName = ref('');
+const memorandumVersion = ref({});
+const requestSubmitted = ref(false);
 
 //computed properties
 const tocToggleButtonLabel = computed(()=>{
     return (props.tocDisplay) ? 'Hide Table Of Contents':'Show Table of Contents';
 });
 const versionId = computed(()=>{
-    return props.versionInfo.Id;
+    return props.versionId;
+});
+const versionName = computed(()=>{
+    return memorandumVersion.value.VersionName__c;
+});
+const versionStatus = computed(()=>{
+    return memorandumVersion.value.Status__c;
+});
+const canonicalVersionNumber = computed(()=>{
+    return memorandumVersion.value.CanonicalVersion__c;
 })
 
+
+// functions
+function handleCalloutException(e) {
+    switch(e.response.status) {
+        case 401:
+            authStore.$reset();
+            router.push({name:'home'});
+            break;
+        default:
+            console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+    }
+}
+async function getApprovalProcess(){
+    let processApprovalEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
+    try {
+        let processApprovalResponse = await axios.get(processApprovalEndpoint,{responseType:'json',headers:{'authorization':`Bearer ${authStore.bearerToken}`}});
+        let memorandumVersionApproval = processApprovalResponse.data.approvals.MemorandumVersion__c[0];
+        approvalProcessId.value = memorandumVersionApproval.id;
+        approvalProcessName.value = memorandumVersionApproval.name;
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
+async function obtainMemorandumVersionInfo(versionIdIn){
+    let memorandumVersionUri = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/${versionIdIn}`;
+    try {
+        let memorandumVersionResponse = await axios.get(memorandumVersionUri,{
+            headers:{'authorization':`Bearer ${authStore.bearerToken}`},
+            responseType:'json'
+        });
+        memorandumVersion.value = memorandumVersionResponse.data;
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
+async function determineApprovalStatus(versionIdIn) {
+    if(versionIdIn === undefined){
+        return;
+    }
+    let processInstanceQuery = encodeURIComponent(`SELECT Id, LastActorId, Status FROM ProcessInstance WHERE TargetObjectId ='${versionIdIn}' AND ProcessDefinitionId = '${approvalProcessId.value}'`);
+    let processInstanceEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${processInstanceQuery}`;
+    try {
+        let processInstanceResponse = await axios.get(processInstanceEndpoint,{responseType:'json',headers:{'authorization':`Bearer ${authStore.bearerToken}`}});
+        for(let processInstanceRec of processInstanceResponse.data.records) {
+            console.log('Process Instance has run.');
+            if(processInstanceRec.Status === 'Pending'){
+                requestSubmitted.value = true;
+            }
+        }
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
 async function handleSubmitApprovalRequest() {
     //get the currentuser's Id
     let currentUserUri = new URL(authStore.idUrl);
@@ -50,22 +114,16 @@ async function handleSubmitApprovalRequest() {
     }
 }
 
+//watchers
+watch(versionId,(newValue)=>{
+    determineApprovalStatus(newValue);
+    obtainMemorandumVersionInfo(newValue);
+});
+
+//lifecycle functions
 onBeforeMount(async () => {
-    //get the list of process approvals.
-    let processApprovalEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
-    try {
-        let processApprovalResponse = await axios.get(processApprovalEndpoint,{responseType:'json',headers:{'authorization':`Bearer ${authStore.bearerToken}`}});
-        //there should only be one approval process that we care about so lets get the first one and save the id and the name
-        let memorandumVersionApproval = processApprovalResponse.data.approvals.MemorandumVersion__c[0];
-        approvalProcessId.value = memorandumVersionApproval.id;
-        approvalProcessName.value = memorandumVersionApproval.name;
-    } catch(e) {
-        console.log('Error obtaining Process Approvals: %s',JSON.stringify(e,null,"\t"));
-    }
-    //determine if there are any 'outstanding' processInstance records for this MemorandumVersion__c record
-
-})
-
+    getApprovalProcess();
+});
 </script>
 
 <template>
@@ -84,10 +142,10 @@ onBeforeMount(async () => {
                     <div class="slds-media__body">
                         <div class="slds-page-header__name">
                             <div class="slds-page-header__name-title">
-                                <h1><span class="slds-page-header__title">{{ props.versionInfo.VersionName__c }}</span></h1>
+                                <h1><span class="slds-page-header__title">{{ versionName }}</span></h1>
                             </div>
                         </div>
-                        <p class="slds-page-header__name-meta">{{ props.versionInfo.Status__c }} &#9900; Canonical Version {{ props.versionInfo.CanonicalVersion__c }}</p>
+                        <p class="slds-page-header__name-meta">{{ versionStatus }} &#9900; Canonical Version {{ canonicalVersionNumber }}</p>
                     </div>
                 </div>
             </div>
@@ -102,7 +160,7 @@ onBeforeMount(async () => {
                                 <button class="slds-button slds-button_neutral" disabled>Preview Version</button>
                             </li>
                             <li>
-                                <button class="slds-button slds-button_neutral" v-on:click="handleSubmitApprovalRequest">Submit for Approval</button>
+                                <button class="slds-button slds-button_neutral" v-bind:disabled="requestSubmitted" v-on:click="handleSubmitApprovalRequest">Submit for Approval</button>
                             </li>
                         </ul>
                     </div>

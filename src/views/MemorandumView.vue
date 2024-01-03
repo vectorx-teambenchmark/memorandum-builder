@@ -1,15 +1,17 @@
 <script setup>
 import { computed, onBeforeMount, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
 import VersionHeading from '../components/VersionHeading.vue';
 import VersionTocManager from '../components/VersionTocManager.vue';
+import VersionProcessManager from '../components/VersionProcessManager.vue';
 import SectionManager from '../components/SectionManager.vue';
 import ContentEditor from '../components/ContentEditor.vue';
 
 const authStore = useAuthStore();
 const route = useRoute();
+const router = useRouter();
 
 const recordId = computed(()=>{
     return route.params?.recordId;
@@ -22,13 +24,23 @@ const versionContents = ref([]);
 const selectedRecord = ref({});
 const queryEndpoint = computed(()=>{
     return `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=`;
-})
+});
 const isSectionSelected = computed(()=>{
     return selectedRecord.value?.attributes?.type === 'MemorandumSection__c';
-})
+});
 const isContentSelected = computed(()=>{
     return selectedRecord.value?.attributes?.type === 'MemorandumContent__c';
-})
+});
+function handleCalloutException(e) {
+    switch(e.response.status) {
+        case 401:
+            authStore.$reset();
+            router.push({name:'home'});
+            break;
+        default:
+            console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+    }
+}
 
 function handleRecordSelection(selectionId){
     let identifiedRecord = versionSections.value.find(section => section.Id === selectionId);
@@ -55,7 +67,7 @@ async function refreshVersionSections(){
             return {Id, Name, Order__c, attributes, isFirst, isLast};
         });
     } catch(e) {
-        console.log('%c Error Retrieving Verision Sections: %s','background:black;color:red',JSON.stringify(e,null,"\t"));
+        handleCalloutException(e);
     }
 }
 async function refreshVersionContents(){
@@ -76,7 +88,7 @@ async function refreshVersionContents(){
             return {attributes, Id, Name, Order__c, Parent__c, isFirst, isLast};
         });
     } catch(e) {
-        console.log('%c Error Retrieving Version Content: %s',JSON.stringify(e,null,"\t"));
+        handleCalloutException(e);
     }
 }
 
@@ -90,12 +102,11 @@ onBeforeMount(async () => {
                 responseType:'json',
                 headers:{'authorization':`Bearer ${authStore.bearerToken}`}
             });
-            console.log('Memorandum Version Data: %s',JSON.stringify(versionResponse,null,"\t"));
             versionInfo.value = versionResponse.data;
             refreshVersionSections();
             refreshVersionContents();
         } catch(e) {
-            console.log('%c Error Retrieving Version Info: %s ','background:black;color:red',JSON.stringify(e,null,"\t"));
+            handleCalloutException(e);
         }
     }
 });
@@ -104,7 +115,10 @@ onBeforeMount(async () => {
 <template>
     <div class="slds-grid slds-wrap">
         <div class="slds-col slds-size_1-of-1 slds-var-p-around_x-small">
-            <VersionHeading v-bind:version-info="versionInfo" v-model:toc-display="versionDisplayToc"/>
+            <VersionHeading v-bind:version-id="versionInfo.Id" v-model:toc-display="versionDisplayToc"/>
+        </div>
+        <div class="slds-col slds-size_1-of-1 slds-var-p-around_small ">
+            <VersionProcessManager v-bind:version-id="versionInfo.Id"/>
         </div>
         <div v-if="versionDisplayToc" class="slds-col slds-size_1-of-5 slds-var-p-around_small">
             <VersionTocManager v-bind:sections="versionSections" v-bind:contents="versionContents" 
