@@ -1,11 +1,15 @@
 <script setup>
 import { onBeforeMount } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import useAuthStore from '../stores/auth';
+
+//events that are able to be emitted.
+const emit = defineEmits({
+    authenticated: null
+});
 
 const authStore = useAuthStore();
 const route = useRoute();
-const router = useRouter();
 
 function authNavigation(){
     let fullUrl = `${authStore.authUrl}?client_id=${authStore.clientId}&redirect_uri=${authStore.callbackUrl}&response_type=${authStore.responseType}&display=${authStore.displayType}`;
@@ -28,11 +32,12 @@ onBeforeMount(()=>{
         },{}); 
         authStore.setToken(hashInfo?.access_token);
         authStore.setApiUrl(hashInfo?.instance_url);
+        authStore.setIdUrl(hashInfo?.id);
         route.params.recordId = hashInfo?.state;
     }
     if(authStore.isAuthenticated){
         console.log('The authStore shows authentication - should push to editor.');
-        router.push({name:'editor',params:route.params});
+        emit('authenticated');
     } else {
         console.log('The authStore does not show Authentication.');
     }

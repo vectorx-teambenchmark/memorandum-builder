@@ -1,8 +1,10 @@
 <script setup>
 import axios from 'axios';
-import { ref, onBeforeMount, computed } from 'vue';
+import { ref, onBeforeMount, computed, watch } from 'vue';
 import CKEditor from '@ckeditor/ckeditor5-vue';
+import { Autosave } from '@ckeditor/ckeditor5-autosave';
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
+import { Comments } from '@ckeditor/ckeditor5-comments';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
 import { Alignment } from '@ckeditor/ckeditor5-alignment';
 import { Bold, Italic, Strikethrough, Subscript, Superscript, Underline } from '@ckeditor/ckeditor5-basic-styles';
@@ -32,27 +34,50 @@ import { Table, TableCaption, TableCellProperties, TableColumnResize, TablePrope
 import { Template } from '@ckeditor/ckeditor5-template';
 import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
+import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
 
 const props = defineProps({
    recordId: {
     type: String,
-    required: true
+    required: true,
+    default(){
+        return '';
+    }
    },
    apiUrl: {
     type: String,
-    required: true
+    required: true,
+    default(){
+        return '';
+    }
    },
    accessToken: {
     type: String,
-    required: true
+    required: true,
+    default(){
+        return '';
+    }
+   },
+   idUrl: {
+    type: String,
+    required: true,
+    default(){
+        return '';
+    }
    },
    contentTitle: {
     type: String,
-    required: true
+    required: true,
+    default(){
+        return 'N/A';
+    }
    },
    bodyContent: {
     type: String,
-    required: true
+    required: true,
+    default(){
+        return '';
+    }
    } 
 });
 const colorArray = computed(()=>{
@@ -119,14 +144,19 @@ const colorArray = computed(()=>{
             }
         ];
 });
-const recordApiUrl = `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`;
+const contentRecord = ref({});
+const recordApiUrl = computed(()=>{
+    return `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`
+});
 const ckeditor = CKEditor.component;
 const editor = ClassicEditor
 const editorConfig = {
     plugins: [
         Alignment,
+        Autosave,
         BlockQuote,
         Bold,
+        Comments,
         DocumentList,
         DocumentListProperties,
         Essentials,
@@ -181,6 +211,17 @@ const editorConfig = {
         Underline,
         WordCount
     ],
+    extraPlugins: [ CommentsAdapter ],
+    autosave: {
+        save( editor ) {
+            handleAutoSave( editor.getData() );
+        }
+    },
+    comments:{
+        editorConfig: {
+            extraPlugins: [Bold, Italic, DocumentList ]
+        }
+    },
     fontBackgroundColor: {
         colors:colorArray.value
     },
@@ -243,8 +284,13 @@ const editorConfig = {
             }
         ]
     },
+    salesforceApi: {
+        baseUri: props.apiUrl,
+        accessToken: props.accessToken,
+        currentUserUri: props.idUrl
+    },
     simpleUpload: {
-        uploadUrl: import.meta.env.VITE_IMG_HOST_URL
+        uploadUrl: `${import.meta.env.VITE_IMAGE_PROCESSOR}`
     },
     style: {
         definitions: [
@@ -315,18 +361,20 @@ const editorConfig = {
         'alignment','bold','italic','underline','strikethrough','subscript','superscript','removeFormat','formatPainter','|',
         'fontBackgroundColor','fontColor','fontSize','fontFamily','|','link','bulletedList','numberedList','selectAll','|',
         'horizontalLine','outdent','indent','|','imageUpload','htmlEmbed','blockQuote','insertTable','mediaEmbed','insertTemplate',
-        'specialCharacters','undo','redo','findAndReplace'
+        'specialCharacters','undo','redo','findAndReplace','|','comment','commentsArchive'
     ],
     licenseKey: 'cFJaWmgyNFNzeS9OZ2N3ZzdRd3lnS0w3YUVUaUJGcWZVL0lHdTRxaTQxNjVvai9rbW1kYUVTSVJnTlZQLU1qQXlNekV5TVRZPQ==',
 };
 const editorData = ref('');
-const contentName = ref('');
+const contentName = computed(()=>{
+    return (contentRecord.value?.Name !== undefined) ? contentRecord.value.Name:'';
+});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
 
 function handleSave(){
     showModal.value = true;
-    axios.patch(recordApiUrl,{'Body__c':editorData.value},{
+    axios.patch(recordApiUrl.value,{'Body__c':editorData.value},{
         headers:{
             'Content-Type':'application/json',
             'Authorization':`Bearer ${props.accessToken}`
@@ -340,6 +388,13 @@ function handleSave(){
         console.log('There was an error updating the record: %s',JSON.stringify(err,null,"\t"));
     });
 }
+function handleAutoSave( editorData ) {
+    //build the data objects
+    let dataObj = { Body__c: editorData };
+    return axios.patch(recordApiUrl.value,dataObj, {
+        headers: {'authorization':`Bearer ${props.accessToken}`,'content-type':'application/json'}
+    });
+}
 function closeModal(){
     showModal.value = false;
 }
@@ -349,15 +404,30 @@ function closeWindow(){
 function issueDebug(){
     console.log(editorData.value);
 }
+async function refreshContentRecord(recordIdVal){
+    try {
+        let contentEndpoint = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/memorandumcontent__c/${recordIdVal}`;
+        let contentResponse = await axios.get(contentEndpoint,{
+            responseType:'json',
+            headers:{'authorization':`Bearer ${props.accessToken}`}
+        });
+        contentRecord.value = contentResponse.data;
+        editorData.value = (contentRecord.value?.Body__c === undefined || contentRecord.value?.Body__c === null) ? '':contentRecord.value.Body__c;
+    } catch(e) {
+        console.log('Error getting content: %s',JSON.stringify(e,null,"\t"))
+    }
+}
 
 /**
- * lifecycle methods for VueJS components
+ * watchers
  */
+watch(() => props.recordId,async (newValue)=>{
+    refreshContentRecord(newValue);
+});
 onBeforeMount(()=>{
-    let {recordId, apiUrl, accessToken, contentTitle, bodyContent} = props;
-    editorData.value = bodyContent;
-    contentName.value = contentTitle;
-})
+    refreshContentRecord(props.recordId);
+});
+
 </script>
 
 <template>
@@ -408,7 +478,7 @@ onBeforeMount(()=>{
                                 <button class="slds-button slds-button_brand" v-on:click="handleSave">Save</button>
                             </li>
                             <li>
-                                <button class="slds-button slds-button_neutral" v-on:click="closeWindow">Close</button>
+                                <button class="slds-button slds-button_neutral" v-on:click="closeWindow" disabled>Close</button>
                             </li>
                             <li>
                                 <button class="slds-button slds-button_text-destructive" v-on:click="issueDebug">Debug</button>
