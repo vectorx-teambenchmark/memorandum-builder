@@ -71,5 +71,5 @@
 </script>
 
 <template>
-    <ComboBox label="Information Memorandum Search" placeholder="Search..." v-model="searchTerm" v-bind:options="optionsReturned" v-on:selection="handleSelection"/>
+    <ComboBox label="Information Memorandum Search" placeholder="Srtart Typing to Search for IM" v-model="searchTerm" v-bind:options="optionsReturned" v-on:selection="handleSelection"/>
 </template>

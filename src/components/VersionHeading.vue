@@ -48,7 +48,7 @@ const versionId = computed(()=>{
     return props.versionId;
 });
 const versionName = computed(()=>{
-    return memorandumVersion.value.VersionName__c + ' - ' + memorandumVersion.value.VersionNotes__c;
+    return memorandumVersion.value.VersionName__c + ((memorandumVersion.value.VersionNotes__c !== undefined && memorandumVersion.value.VersionNotes__c !== null) ? ' - ' + memorandumVersion.value.VersionNotes__c : '');
 });
 const versionStatus = computed(()=>{
     return memorandumVersion.value.Status__c;
