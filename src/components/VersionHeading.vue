@@ -3,6 +3,7 @@ import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
+import SelectorBox from '../components/SelectorBox.vue';
 
 const props = defineProps({
     versionId:{
@@ -30,6 +31,14 @@ const approvalProcessId = ref('');
 const approvalProcessName = ref('');
 const memorandumVersion = ref({});
 const approverId = ref('');
+const statusOptions = ref([]);
+const showCloneForm = ref(false);
+const showErrMess = ref(false);
+const errMess = ref('');
+
+const newVersionCanonicalVersion = ref(0);
+const newVersionStatus = ref('');
+const newVersionDescription = ref('');
 
 //computed properties
 const tocToggleButtonLabel = computed(()=>{
@@ -39,7 +48,7 @@ const versionId = computed(()=>{
     return props.versionId;
 });
 const versionName = computed(()=>{
-    return memorandumVersion.value.VersionName__c;
+    return memorandumVersion.value.VersionName__c + ((memorandumVersion.value.VersionNotes__c !== undefined && memorandumVersion.value.VersionNotes__c !== null) ? ' - ' + memorandumVersion.value.VersionNotes__c : '');
 });
 const versionStatus = computed(()=>{
     return memorandumVersion.value.Status__c;
@@ -61,6 +70,12 @@ function handleCalloutException(e) {
         default:
             console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
     }
+}
+function isNotEmpty(str) {
+  return !!str && str.trim();
+}
+function handleStatusSelection(eventItem){
+    newVersionStatus.value = eventItem.detail.selection.value;
 }
 async function getApprovalProcess(){
     let processApprovalEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
@@ -89,12 +104,53 @@ async function determineDefaultApproverId(versionIdIn){
     if(versionIdIn === undefined || versionIdIn === null || versionIdIn.length === 0) {
         return;
     }
-    let approverQuery = encodeURIComponent(`SELECT Id, ParentMarketingMaterial__r.Opportunity__r.DT_Managing_Director__c FROM MemorandumVersion__c WHERE Id ='${versionIdIn}'`);
+    let approverQuery = encodeURIComponent(`SELECT Id, ParentMarketingMaterial__r.Opportunity__r.Transaction_Director__c, ParentMarketingMaterial__r.Opportunity__r.Benchmark_Entity__r.Country__c FROM MemorandumVersion__c WHERE Id ='${versionIdIn}'`);
     let approverUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${approverQuery}`;
     try {
         let approverResponse = await axios.get(approverUrl,{headers:{'authorization':`Bearer ${authStore.bearerToken}`},responseType:'json'});
-        let approverResponseId = approverResponse.data.records[0]?.ParentMarketingMaterial__r?.Opportunity__r?.DT_Managing_Director__c;
+        let approverResponseId = approverResponse.data.records[0]?.ParentMarketingMaterial__r?.Opportunity__r?.Transaction_Director__c;
         approverId.value = (approverResponseId === undefined || approverResponseId === null) ? import.meta.env.VITE_SALESFORCE_DEFAULT_APPROVER : approverResponseId;
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
+async function handleCloneVersion(versionIdIn){
+    showErrMess.value = false;
+    errMess.value = '';
+    if(!isNotEmpty(versionIdIn)) {
+        return;
+    }
+    //make sure the fields are populated
+    if(!isNotEmpty(newVersionStatus.value) || !isNotEmpty(newVersionDescription.value)){
+        errMess.value = 'All Fields must be populated.';
+        console.log('New Version Status: %s, New Version Description: %s',JSON.stringify(newVersionStatus.value,null,"\t"),JSON.stringify(newVersionDescription.value,null,"\t"));
+        showErrMess.value = true;
+        return;
+    }
+    let cloneVersionUrl = `${authStore.apiUrl}/services/apexrest/imservice/`;
+    let formData = {
+        versionId:versionIdIn,
+        newCanonicalVersion:newVersionCanonicalVersion.value,
+        versionStatus:newVersionStatus.value,
+        versionNotes:newVersionDescription.value
+    };
+    try {
+        let cloneVersionResponse = await axios({
+            method:'post',
+            url:cloneVersionUrl,
+            data: formData,
+            responseType:'json',
+            headers:{
+                'Authorization':`Bearer ${authStore.bearerToken}`
+            }
+        });
+        showCloneForm.value = false;
+        let newVersionId = cloneVersionResponse.data;
+        newVersionCanonicalVersion.value = 0;
+        newVersionStatus.value = '';
+        newVersionDescription.value = '';
+        //redirect to new Version
+        router.push({name:'memorandumversion',params:{recordId:newVersionId}});
     } catch(e) {
         handleCalloutException(e);
     }
@@ -122,12 +178,29 @@ async function handleSubmitApprovalRequest() {
         });
         emit('approvalRequestSubmitted');
     } catch(e) {
-        console.log('Error Submitting Approval Request: %s',JSON.stringify(e,null,"\t"));
+        handleCalloutException(e);
+    }
+}
+async function obtainMemorandumVersionStatusPicklist(){
+    let endpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/describe`;
+    try {
+        let response = await axios({
+            url: endpoint,
+            method: 'get',
+            responseType: 'json',
+            headers: {'Authorization':`Bearer ${authStore.bearerToken}`}
+        });
+        let statusField = response.data.fields.find(obj => obj.name === 'Status__c');
+        statusOptions.value = statusField.picklistValues.map( plItem => {
+            return { label:plItem.label, value:plItem.value };
+        })
+    } catch(e) {
+        handleCalloutException(e);
     }
 }
 
 //watchers
-watch(versionId,(newValue)=>{
+watch(() => props.versionId,(newValue)=>{
     determineDefaultApproverId(newValue);
     obtainMemorandumVersionInfo(newValue);
 });
@@ -135,6 +208,9 @@ watch(versionId,(newValue)=>{
 //lifecycle functions
 onBeforeMount(async () => {
     getApprovalProcess();
+    determineDefaultApproverId(versionId.value);
+    obtainMemorandumVersionInfo(versionId.value);
+    obtainMemorandumVersionStatusPicklist();
 });
 </script>
 
@@ -169,6 +245,9 @@ onBeforeMount(async () => {
                                 <button class="slds-button slds-button_neutral" v-on:click="emit('update:tocDisplay',!props.tocDisplay)">{{ tocToggleButtonLabel }}</button>
                             </li>
                             <li>
+                                <button class="slds-button slds-button_neutral" v-on:click="showCloneForm = !showCloneForm">{{ (showCloneForm) ? 'Cancel Clone Version':'Clone Version' }}</button>
+                            </li>
+                            <li>
                                 <button class="slds-button slds-button_neutral" disabled>Preview Version</button>
                             </li>
                             <li>
@@ -176,6 +255,34 @@ onBeforeMount(async () => {
                             </li>
                         </ul>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div v-if="showCloneForm" class="slds-grid slds-wrap">
+        <div class="slds-col slds-size_1-of-1">
+            <div class="slds-card slds-var-m-bottom_large">
+                <div class="slds-card__body slds-card__body-inner slds-var-p-horizontal_small">
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="txtCanonicalVersion">Canonical Version</label>
+                        <div class="slds-form-element__control">
+                            <input type="number" id="txtCanonicalVersion" class="slds-input" v-model="newVersionCanonicalVersion"/>
+                        </div>
+                    </div>
+                    <SelectorBox label="Status" placeholder="Select Status" v-bind:options="statusOptions" v-model="newVersionStatus" v-on:selection="handleStatusSelection($event)"/>
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="txtDescription">Description</label>
+                        <div class="slds-form-element__control">
+                            <textarea id="txtDescription" placeholder="Enter Description..." v-model="newVersionDescription" class="slds-textarea"></textarea>
+                        </div>
+                    </div>
+                    <div v-if="showErrMess" class="slds-text-color_destructive">
+                        <p>{{  errMess }}</p>
+                    </div>
+                </div>
+                <div class="slds-card__footer slds-text-align_right">
+                    <button class="slds-button slds-button_brand" v-on:click="handleCloneVersion(props.versionId)">Save</button>
+                    <button class="slds-button slds-button_destructive" v-on:click="showCloneForm = false;">Cancel</button>
                 </div>
             </div>
         </div>

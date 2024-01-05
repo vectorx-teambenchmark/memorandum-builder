@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeMount, ref } from 'vue';
+import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
@@ -109,24 +109,18 @@ async function refreshVersionContents(){
         handleCalloutException(e);
     }
 }
-
-onBeforeMount(async () => {
+watch(()=>router.params?.recordId,(newValue)=>{
+    if(newValue.length > 0){
+        refreshVersionSections();
+        refreshVersionContents();
+        determineApprovalStatus();
+    }
+})
+onBeforeMount(() => {
     if(recordId.value.length > 0){
-        let versionEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/${recordId.value}`;
-        try {
-            let versionResponse = await axios({
-                method:'get',
-                url:versionEndpoint,
-                responseType:'json',
-                headers:{'authorization':`Bearer ${authStore.bearerToken}`}
-            });
-            versionInfo.value = versionResponse.data;
-            refreshVersionSections();
-            refreshVersionContents();
-            determineApprovalStatus();
-        } catch(e) {
-            handleCalloutException(e);
-        }
+        refreshVersionSections();
+        refreshVersionContents();
+        determineApprovalStatus();
     }
 });
 </script>
@@ -134,10 +128,10 @@ onBeforeMount(async () => {
 <template>
     <div class="slds-grid slds-wrap">
         <div class="slds-col slds-size_1-of-1 slds-var-p-around_x-small">
-            <VersionHeading v-bind:version-id="versionInfo.Id" v-bind:allow-approval-request-submittal="requestSubmitted" v-model:toc-display="versionDisplayToc" v-on:approval-request-submitted="determineApprovalStatus"/>
+            <VersionHeading v-bind:version-id="recordId" v-bind:allow-approval-request-submittal="requestSubmitted" v-model:toc-display="versionDisplayToc" v-on:approval-request-submitted="determineApprovalStatus"/>
         </div>
         <div v-if="requestSubmitted" class="slds-col slds-size_1-of-1 slds-var-p-around_small ">
-            <VersionProcessManager v-bind:version-id="versionInfo.Id" v-on:approval-process-status-change="determineApprovalStatus"/>
+            <VersionProcessManager v-bind:version-id="recordId" v-on:approval-process-status-change="determineApprovalStatus"/>
         </div>
         <div v-if="versionDisplayToc" class="slds-col slds-size_1-of-5 slds-var-p-around_small">
             <VersionTocManager v-bind:sections="versionSections" v-bind:contents="versionContents" 
@@ -148,7 +142,8 @@ onBeforeMount(async () => {
                 v-bind:restrict-editing="requestSubmitted" v-on:sectiondelete="refreshVersionSections" v-on:contentselection="handleRecordSelection" 
                 v-on:contentupdate="refreshVersionContents"/>
             <ContentEditor v-if="isContentSelected" v-bind:record-id="selectedRecord.Id" v-bind:api-url="authStore.apiUrl" v-bind:access-token="authStore.bearerToken"
-                v-bind:id-url="authStore.idUrl" v-bind:content-title="selectedRecord.Name" v-bind:body-content="selectedRecord.Body__c"/>
+                v-bind:id-url="authStore.idUrl" v-bind:content-title="selectedRecord.Name" v-bind:body-content="selectedRecord.Body__c"
+                v-bind:approval-request-submitted="requestSubmitted"/>
         </div>
     </div>
 </template>

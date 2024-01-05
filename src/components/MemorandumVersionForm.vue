@@ -25,11 +25,23 @@
     const description = ref('');
     const statusOptions = ref([]);
     const status = ref('');
+    const displayErrMess = ref(false);
+    const errMess = ref('');
 
+    function isNotEmpty(str) {
+        return !!str && str.trim(); // Removes whitespace and checks for truthy value
+    }
     function handleCancel() {
         emit('cancel');
     }
     function handleSave() {
+        displayErrMess.value = false;
+        errMess.value = '';
+        if(!isNotEmpty(description.value) || !isNotEmpty(status.value)){
+            console.log('Description: %s, Status: %s',JSON.stringify(description.value),JSON.stringify(status.value));
+            errMess.value = 'All Fields must be populated.';
+            displayErrMess.value = true;
+        }
         let payload = {'CanonicalVersion__c':canonicalVersion.value,'VersionNotes__c':description.value,
             'Status__c':status.value,'ParentMarketingMaterial__c':props.cmmId, 'Id':(props.versionId !== undefined) ? props.versionId:undefined};
         emit('save',{detail:payload});
@@ -65,7 +77,7 @@
             </div>
         </div>
         <div class="slds-col slds-size_1-of-1">
-            <SelectorBox label="Status" placeholder="Select Status" v-bind:options="statusOptions" v-on:selection="status = $event.detail.value"/>
+            <SelectorBox label="Status" placeholder="Select Status" v-bind:options="statusOptions" v-model="status" v-on:selection="status = $event.detail.selection.value"/>
         </div>
         <div class="slds-col slds-size_1-of-1">
             <div class="slds-form-element">
@@ -74,6 +86,11 @@
             <div class="slds-form-element__control">
                 <textarea id="txtDescription" placeholder="Enter Description..." v-model="description" class="slds-textarea"></textarea>
             </div>
+        </div>
+        <div v-if="displayErrMess" class="slds-col slds-size_1-of-1 slds-var-m-vertical_small">
+            <p class="slds-text-color_destructive slds-text-longform">
+                {{ errMess }}
+            </p>
         </div>
         <div class="slds-col slds-size_1-of-1">
             <div class="slds-button-group">
