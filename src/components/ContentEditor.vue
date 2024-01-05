@@ -78,6 +78,12 @@ const props = defineProps({
     default(){
         return '';
     }
+   },
+   approvalRequestSubmitted: {
+    type: Boolean,
+    default(){
+        return false;
+    }
    } 
 });
 const colorArray = computed(()=>{
@@ -147,6 +153,10 @@ const colorArray = computed(()=>{
 const contentRecord = ref({});
 const recordApiUrl = computed(()=>{
     return `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`
+});
+const showOnlyComments = computed(()=>{
+    console.log('showOnlyComments executed. %s',JSON.stringify(props.approvalRequestSubmitted));
+    return props.approvalRequestSubmitted;
 });
 const ckeditor = CKEditor.component;
 const editor = ClassicEditor
@@ -421,8 +431,11 @@ async function refreshContentRecord(recordIdVal){
 /**
  * watchers
  */
-watch(() => props.recordId,async (newValue)=>{
+watch(() => props.recordId, async (newValue)=>{
     refreshContentRecord(newValue);
+});
+watch(() => props.approvalRequestSubmitted, (newValue)=>{
+    console.log('Property approvalRequestSubmitted changed. New Value: %s',JSON.stringify(newValue));
 });
 onBeforeMount(()=>{
     refreshContentRecord(props.recordId);
@@ -478,9 +491,6 @@ onBeforeMount(()=>{
                                 <button class="slds-button slds-button_brand" v-on:click="handleSave">Save</button>
                             </li>
                             <li>
-                                <button class="slds-button slds-button_neutral" v-on:click="closeWindow" disabled>Close</button>
-                            </li>
-                            <li>
                                 <button class="slds-button slds-button_text-destructive" v-on:click="issueDebug">Debug</button>
                             </li>
                         </ul>
@@ -491,7 +501,7 @@ onBeforeMount(()=>{
     </nav>
     <!-- END : Header and Actions-->
 
-    <ckeditor :editor="editor" v-model="editorData" :config="editorConfig" />
+    <ckeditor :editor="editor" v-model="editorData" :config="editorConfig" :disabled="showOnlyComments" />
 </template>
 
 <style>

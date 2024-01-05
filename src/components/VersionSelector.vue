@@ -26,7 +26,7 @@
 
     //before the component is loaded into the DOM
     onBeforeMount(async () => {
-        let soqlString = encodeURIComponent(`SELECT Id, VersionName__c, Status__c FROM MemorandumVersion__c WHERE ParentMarketingMaterial__c ='${props.cmmId}'`);
+        let soqlString = encodeURIComponent(`SELECT Id, VersionName__c, Status__c, VersionNotes__c FROM MemorandumVersion__c WHERE ParentMarketingMaterial__c ='${props.cmmId}'`);
         let endpoint = `${props.urlBase}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${soqlString}`;
         try {
             let response = await axios({
@@ -36,7 +36,7 @@
                 headers: {'Authorization':`Bearer ${props.apiToken}`}
             });
             versionsAvailable.value = response.data.records.map((element)=>{
-                return { label:`${element.VersionName__c} (${element.Status__c})`, value:element.Id };
+                return { label:`${element.VersionName__c} (${element.Status__c}) ${(element.VersionNotes__c !== undefined) ? '- ' + element.VersionNotes__c:''}`, value:element.Id };
             });
         } catch(e) {
             switch(e.response.status){

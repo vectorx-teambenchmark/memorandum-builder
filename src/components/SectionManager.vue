@@ -218,7 +218,6 @@ onBeforeMount(async ()=>{
                         <button class="slds-button slds-button_brand" v-on:click="showEditSectionForm = !showEditSectionForm">{{ (showEditSectionForm) ? 'Cancel Rename':'Rename Section'}}</button>
                         <button class="slds-button slds-button_neutral" v-on:click="handleMoveSectionUp" v-bind:disabled="sectionInfo.isFirst">Move Section Up</button>
                         <button class="slds-button slds-button_neutral" v-on:click="handleMoveSectionDown" v-bind:disabled="sectionInfo.isLast">Move Section Down</button>
-                        <button class="slds-button slds-button_brand" disabled>Clone Section</button>
                         <button class="slds-button slds-button_destructive" v-on:click="deleteSection">Delete Section</button>
                     </div>
                 </div>
