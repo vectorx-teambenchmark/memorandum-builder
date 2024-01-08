@@ -143,7 +143,7 @@ onBeforeMount(() => {
                 v-on:contentupdate="refreshVersionContents"/>
             <ContentEditor v-if="isContentSelected" v-bind:record-id="selectedRecord.Id" v-bind:api-url="authStore.apiUrl" v-bind:access-token="authStore.bearerToken"
                 v-bind:id-url="authStore.idUrl" v-bind:content-title="selectedRecord.Name" v-bind:body-content="selectedRecord.Body__c"
-                v-bind:approval-request-submitted="requestSubmitted"/>
+                v-bind:approval-request-submitted="requestSubmitted" v-on:contentupdated="refreshVersionContents"/>
         </div>
     </div>
 </template>
