@@ -86,6 +86,12 @@ const props = defineProps({
     default(){
         return false;
     }
+   },
+   isPublished: {
+    type: Boolean,
+    default(){
+        return false;
+    }
    } 
 });
 const emit = defineEmits(['contentupdated']);
@@ -160,8 +166,7 @@ const recordApiUrl = computed(()=>{
     return `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`
 });
 const showOnlyComments = computed(()=>{
-    console.log('showOnlyComments executed. %s',JSON.stringify(props.approvalRequestSubmitted));
-    return props.approvalRequestSubmitted;
+    return props.approvalRequestSubmitted || props.isPublished;
 });
 const ckeditor = CKEditor.component;
 const editor = ClassicEditor
@@ -465,9 +470,6 @@ async function handleSaveInformation(){
 watch(() => props.recordId, async (newValue)=>{
     refreshContentRecord(newValue);
 });
-watch(() => props.approvalRequestSubmitted, (newValue)=>{
-    console.log('Property approvalRequestSubmitted changed. New Value: %s',JSON.stringify(newValue));
-});
 onBeforeMount(()=>{
     refreshContentRecord(props.recordId);
 });
@@ -519,10 +521,10 @@ onBeforeMount(()=>{
                     <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
                             <li>
-                                <button class="slds-button slds-button_neutral" v-on:click="displayRenameContentForm = !displayRenameContentForm">{{ (displayRenameContentForm) ? 'Cancel Rename Content':'Rename Content' }}</button>
+                                <button class="slds-button slds-button_neutral" v-bind:disabled="approvalRequestSubmitted || isPublished" v-on:click="displayRenameContentForm = !displayRenameContentForm">{{ (displayRenameContentForm) ? 'Cancel Rename Content':'Rename Content' }}</button>
                             </li>
                             <li>
-                                <button class="slds-button slds-button_brand" v-on:click="handleSave">Save</button>
+                                <button class="slds-button slds-button_brand" v-bind:disabled="approvalRequestSubmitted || isPublished" v-on:click="handleSave">Save</button>
                             </li>
                             <li>
                                 <button class="slds-button slds-button_text-destructive" v-on:click="issueDebug">Debug</button>

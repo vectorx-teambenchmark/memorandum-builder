@@ -38,7 +38,6 @@
         displayErrMess.value = false;
         errMess.value = '';
         if(!isNotEmpty(description.value) || !isNotEmpty(status.value)){
-            console.log('Description: %s, Status: %s',JSON.stringify(description.value),JSON.stringify(status.value));
             errMess.value = 'All Fields must be populated.';
             displayErrMess.value = true;
         }

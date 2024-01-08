@@ -32,6 +32,9 @@ const isSectionSelected = computed(()=>{
 const isContentSelected = computed(()=>{
     return selectedRecord.value?.attributes?.type === 'MemorandumContent__c';
 });
+const isPublished = computed(()=>{
+    return versionInfo.value?.Status__c === 'Published';
+})
 
 function handleCalloutException(e) {
     switch(e.response.status) {
@@ -42,6 +45,10 @@ function handleCalloutException(e) {
         default:
             console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
     }
+}
+function handleVersionDataChange(){
+    refreshVersionInfo();
+    determineApprovalStatus();
 }
 function handleRecordSelection(selectionId){
     let identifiedRecord = versionSections.value.find(section => section.Id === selectionId);
@@ -65,6 +72,21 @@ async function determineApprovalStatus() {
                 requestSubmitted.value = true;
             }
         }
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
+async function refreshVersionInfo(){
+    if(recordId.value === undefined || recordId.value?.length === 0){
+        return;
+    }
+    let versionInfoUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/${recordId.value}/`;
+    try {
+        let versionInfoResponse = await axios.get(versionInfoUrl,{
+            headers:{'authorization':`Bearer ${authStore.bearerToken}`},
+            responseType:'json'
+        });
+        versionInfo.value = versionInfoResponse.data;
     } catch(e) {
         handleCalloutException(e);
     }
@@ -111,6 +133,7 @@ async function refreshVersionContents(){
 }
 watch(()=>router.params?.recordId,(newValue)=>{
     if(newValue.length > 0){
+        refreshVersionInfo();
         refreshVersionSections();
         refreshVersionContents();
         determineApprovalStatus();
@@ -118,6 +141,7 @@ watch(()=>router.params?.recordId,(newValue)=>{
 })
 onBeforeMount(() => {
     if(recordId.value.length > 0){
+        refreshVersionInfo();
         refreshVersionSections();
         refreshVersionContents();
         determineApprovalStatus();
@@ -128,7 +152,7 @@ onBeforeMount(() => {
 <template>
     <div class="slds-grid slds-wrap">
         <div class="slds-col slds-size_1-of-1 slds-var-p-around_x-small">
-            <VersionHeading v-bind:version-id="recordId" v-bind:allow-approval-request-submittal="requestSubmitted" v-model:toc-display="versionDisplayToc" v-on:approval-request-submitted="determineApprovalStatus"/>
+            <VersionHeading v-bind:version-id="recordId" v-bind:allow-approval-request-submittal="requestSubmitted" v-model:toc-display="versionDisplayToc" v-on:approval-request-submitted="handleVersionDataChange"/>
         </div>
         <div v-if="requestSubmitted" class="slds-col slds-size_1-of-1 slds-var-p-around_small ">
             <VersionProcessManager v-bind:version-id="recordId" v-on:approval-process-status-change="determineApprovalStatus"/>
@@ -139,11 +163,11 @@ onBeforeMount(() => {
         </div>
         <div v-bind:class="{'slds-col':true, 'slds-size_1-of-1':!versionDisplayToc,'slds-size_4-of-5':versionDisplayToc,'slds-var-p-around_small':true}">
             <SectionManager v-if="isSectionSelected" v-bind:section-id="selectedRecord.Id" v-on:sectionupdate="refreshVersionSections" 
-                v-bind:restrict-editing="requestSubmitted" v-on:sectiondelete="refreshVersionSections" v-on:contentselection="handleRecordSelection" 
+                v-bind:restrict-editing="requestSubmitted || isPublished" v-on:sectiondelete="refreshVersionSections" v-on:contentselection="handleRecordSelection" 
                 v-on:contentupdate="refreshVersionContents"/>
             <ContentEditor v-if="isContentSelected" v-bind:record-id="selectedRecord.Id" v-bind:api-url="authStore.apiUrl" v-bind:access-token="authStore.bearerToken"
                 v-bind:id-url="authStore.idUrl" v-bind:content-title="selectedRecord.Name" v-bind:body-content="selectedRecord.Body__c"
-                v-bind:approval-request-submitted="requestSubmitted" v-on:contentupdated="refreshVersionContents"/>
+                v-bind:approval-request-submitted="requestSubmitted" v-bind:is-published="isPublished" v-on:contentupdated="refreshVersionContents"/>
         </div>
     </div>
 </template>

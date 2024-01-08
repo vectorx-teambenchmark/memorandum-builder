@@ -94,7 +94,7 @@ async function handleMoveSectionDown(){
         });  
         await obtainSectionInfo();
     } catch(e) {
-        console.log('Error: %s',JSON.stringify(e,null,"\t"));
+        handleCalloutException(e);
     }
     emit('sectionupdate');
 }

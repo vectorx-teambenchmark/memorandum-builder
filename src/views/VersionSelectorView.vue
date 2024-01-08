@@ -52,6 +52,9 @@ async function retrieveCmm(cmmId){
     }
 }
 async function retrieveVersionsByParentId(cmmId){
+    if(authStore.bearerToken.length === 0){
+        router.push({name:'home', params:{recordId:cmmId}});
+    }
     try {
         let versionQuery = encodeURIComponent(`SELECT Id, Name, CanonicalVersion__c, Status__c, VersionName__c, VersionNotes__c FROM MemorandumVersion__c WHERE ParentMarketingMaterial__c = '${cmmId}'`);
         let versionQueryUri = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${versionQuery}`;
@@ -71,7 +74,6 @@ async function retrieveVersionsByParentId(cmmId){
 }
 async function handleVersionCreate(payload){
     try {
-        console.log('Payload passed into handleVersionCreate: %s',JSON.stringify(payload,null,"\t"));
         let createVersionUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/`;
         let createVersionResponse = await axios({
             method:'post',

@@ -35,6 +35,7 @@ const statusOptions = ref([]);
 const showCloneForm = ref(false);
 const showErrMess = ref(false);
 const errMess = ref('');
+const communitiesList = ref([]);
 
 const newVersionCanonicalVersion = ref(0);
 const newVersionStatus = ref('');
@@ -59,6 +60,9 @@ const canonicalVersionNumber = computed(()=>{
 const requestSubmitted = computed(()=>{
     return props.allowApprovalRequestSubmittal;
 });
+const isPublished = computed(()=>{
+    return memorandumVersion.value?.Status__c === 'Published';
+})
 
 // functions
 function handleCalloutException(e) {
@@ -77,6 +81,15 @@ function isNotEmpty(str) {
 function handleStatusSelection(eventItem){
     newVersionStatus.value = eventItem.detail.selection.value;
 }
+function redirectToPreview(){
+    //find the networkId of the Preview URL
+    let previewCommunity = communitiesList.value.find(communityElement => communityElement.name === 'Invite Confirmation');
+    let previewStartUrl = `/cim-preview?c__rid=${versionId.value}`;
+    //build base of redirectUrl
+    //let redirectUrl = `${authStore.apiUrl}/servlet/networks/switch?networkId=${previewCommunity.id}&startUrl=${previewStartUrl}`;
+    let redirectUrl = `${previewCommunity.siteUrl}${previewStartUrl}`;
+    window.open(redirectUrl,'_blank');
+}
 async function getApprovalProcess(){
     let processApprovalEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
     try {
@@ -84,6 +97,18 @@ async function getApprovalProcess(){
         let memorandumVersionApproval = processApprovalResponse.data.approvals.MemorandumVersion__c[0];
         approvalProcessId.value = memorandumVersionApproval.id;
         approvalProcessName.value = memorandumVersionApproval.name;
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
+async function getCommunities(){
+    let communitiesUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/connect/communities/?status=Live`;
+    try {
+        let communitiesResponse = await axios.get(communitiesUrl,{
+            headers: { 'authorization':`Bearer ${authStore.bearerToken}`},
+            responseType:'json'
+        });
+        communitiesList.value = communitiesResponse.data.communities;
     } catch(e) {
         handleCalloutException(e);
     }
@@ -123,7 +148,6 @@ async function handleCloneVersion(versionIdIn){
     //make sure the fields are populated
     if(!isNotEmpty(newVersionStatus.value) || !isNotEmpty(newVersionDescription.value)){
         errMess.value = 'All Fields must be populated.';
-        console.log('New Version Status: %s, New Version Description: %s',JSON.stringify(newVersionStatus.value,null,"\t"),JSON.stringify(newVersionDescription.value,null,"\t"));
         showErrMess.value = true;
         return;
     }
@@ -155,7 +179,6 @@ async function handleCloneVersion(versionIdIn){
         handleCalloutException(e);
     }
 }
-
 async function handleSubmitApprovalRequest() {
     //get the currentuser's Id
     let currentUserUri = new URL(authStore.idUrl);
@@ -198,6 +221,21 @@ async function obtainMemorandumVersionStatusPicklist(){
         handleCalloutException(e);
     }
 }
+async function handlePublishVersionRequest(){
+    let versionData = {Status__c: 'Published'};
+    try {
+        let versionUpdateUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/${versionId.value}`;
+        let versionUpdateResponse = await axios.patch(versionUpdateUrl,versionData,{
+            headers:{'authorization':`Bearer ${authStore.bearerToken}`},
+            responseType:'json'
+        });
+        console.log('Version Update Response: %s',JSON.stringify(versionUpdateResponse,null,"\t"));
+        emit('approvalRequestSubmitted');
+        obtainMemorandumVersionInfo(versionId.value);
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
 
 //watchers
 watch(() => props.versionId,(newValue)=>{
@@ -208,6 +246,7 @@ watch(() => props.versionId,(newValue)=>{
 //lifecycle functions
 onBeforeMount(async () => {
     getApprovalProcess();
+    getCommunities();
     determineDefaultApproverId(versionId.value);
     obtainMemorandumVersionInfo(versionId.value);
     obtainMemorandumVersionStatusPicklist();
@@ -248,10 +287,13 @@ onBeforeMount(async () => {
                                 <button class="slds-button slds-button_neutral" v-on:click="showCloneForm = !showCloneForm">{{ (showCloneForm) ? 'Cancel Clone Version':'Clone Version' }}</button>
                             </li>
                             <li>
-                                <button class="slds-button slds-button_neutral" disabled>Preview Version</button>
+                                <button class="slds-button slds-button_neutral" v-on:click="redirectToPreview">Preview Version</button>
                             </li>
                             <li>
-                                <button class="slds-button slds-button_neutral" v-bind:disabled="requestSubmitted" v-on:click="handleSubmitApprovalRequest">Submit for Approval</button>
+                                <button class="slds-button slds-button_neutral" v-bind:disabled="requestSubmitted || isPublished" v-on:click="handleSubmitApprovalRequest">Submit for Approval</button>
+                            </li>
+                            <li>
+                                <button class="slds-button slds-button_neutral" v-bind:disabled="isPublished" v-on:click="handlePublishVersionRequest">Publish Version</button>
                             </li>
                         </ul>
                     </div>
