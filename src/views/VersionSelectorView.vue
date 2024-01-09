@@ -27,7 +27,7 @@ function handleCalloutException(e) {
     switch(e.response.status) {
         case 401:
             authStore.$reset();
-            router.push({name:'home'});
+            router.push({name:'home', params:{recordId:marketingMaterialId}});
             break;
         default:
             console.log('There was an error: %s',JSON.stringify(e,null,"\t"));

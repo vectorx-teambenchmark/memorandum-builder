@@ -101,7 +101,7 @@ onBeforeMount(()=>{
                                 </button>
                                 <span class="slds-has-flexi-truncate">
                                     <span class="slds-tree__item-label slds-truncate" v-bind:title="tocChildItem.Name"
-                                        v-on:click.self.stop="emit('selection',tocChildItem.Id)">{{ tocChildItem.Name }}</span>
+                                        v-on:click.self.stop="emit('selection',tocChildItem.Id)">{{ tocChildItem.Name }} ({{ tocChildItem.ActiveComments__c }})</span>
                                 </span>
                             </div>
                         </li>

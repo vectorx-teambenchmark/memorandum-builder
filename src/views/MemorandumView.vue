@@ -112,7 +112,7 @@ async function refreshVersionSections(){
     }
 }
 async function refreshVersionContents(){
-    let contentsQuery = encodeURIComponent(`SELECT Id, Name, Order__c, Parent__c, Body__c FROM MemorandumContent__c WHERE Parent__r.Parent__c ='${recordId.value}' ORDER BY Order__c ASC`);
+    let contentsQuery = encodeURIComponent(`SELECT Id, Name, Order__c, Parent__c, ActiveComments__c, Body__c FROM MemorandumContent__c WHERE Parent__r.Parent__c ='${recordId.value}' ORDER BY Order__c ASC`);
     let contentsEndpoint = queryEndpoint.value + contentsQuery;
     try {
         let contentsResponse = await axios({
@@ -122,10 +122,10 @@ async function refreshVersionContents(){
             headers:{'authorization':`Bearer ${authStore.bearerToken}`}
         });
         versionContents.value = contentsResponse.data.records.map((item,index,arr)=>{
-            let {Id, Name, Order__c, Parent__c, attributes } = item;
+            let {Id, Name, Order__c, Parent__c, ActiveComments__c, attributes } = item;
             let isFirst = (index === 0) ? true:false;
             let isLast = (index === (arr.length-1)) ? true:false;
-            return {attributes, Id, Name, Order__c, Parent__c, isFirst, isLast};
+            return {attributes, Id, Name, Order__c, Parent__c, ActiveComments__c, isFirst, isLast};
         });
     } catch(e) {
         handleCalloutException(e);
