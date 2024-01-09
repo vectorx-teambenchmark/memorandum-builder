@@ -1,6 +1,7 @@
 <script setup>
 import axios from 'axios';
 import { ref, onBeforeMount, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import { Autosave } from '@ckeditor/ckeditor5-autosave';
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
@@ -35,6 +36,7 @@ import { Template } from '@ckeditor/ckeditor5-template';
 import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
+import useAuthStore from '../stores/auth';
 
 const props = defineProps({
    recordId: {
@@ -84,8 +86,17 @@ const props = defineProps({
     default(){
         return false;
     }
+   },
+   isPublished: {
+    type: Boolean,
+    default(){
+        return false;
+    }
    } 
 });
+const emit = defineEmits(['contentupdated']);
+const authStore = useAuthStore();
+const router = useRouter();
 const colorArray = computed(()=>{
     return [
             {
@@ -155,8 +166,7 @@ const recordApiUrl = computed(()=>{
     return `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`
 });
 const showOnlyComments = computed(()=>{
-    console.log('showOnlyComments executed. %s',JSON.stringify(props.approvalRequestSubmitted));
-    return props.approvalRequestSubmitted;
+    return props.approvalRequestSubmitted || props.isPublished;
 });
 const ckeditor = CKEditor.component;
 const editor = ClassicEditor
@@ -381,7 +391,18 @@ const contentName = computed(()=>{
 });
 const modalText  = ref('Saving...');
 const showModal = ref(false);
+const displayRenameContentForm = ref(false);
 
+function handleCalloutException(e) {
+    switch(e.response.status) {
+        case 401:
+            authStore.$reset();
+            router.push({name:'home'});
+            break;
+        default:
+            console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+    }
+}
 function handleSave(){
     showModal.value = true;
     axios.patch(recordApiUrl.value,{'Body__c':editorData.value},{
@@ -408,9 +429,6 @@ function handleAutoSave( editorData ) {
 function closeModal(){
     showModal.value = false;
 }
-function closeWindow(){
-    window.close();
-}
 function issueDebug(){
     console.log(editorData.value);
 }
@@ -427,15 +445,30 @@ async function refreshContentRecord(recordIdVal){
         console.log('Error getting content: %s',JSON.stringify(e,null,"\t"))
     }
 }
+async function handleSaveInformation(){
+    try {
+        let contentUpdateEndpoint =`${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${contentRecord.value.Id}`;
+        let tempObject = Object.assign({},{Name:contentRecord.value.Name});
+        await axios({
+            method: 'patch',
+            url: contentUpdateEndpoint,
+            data: tempObject,
+            headers: {'authorization':`Bearer ${props.accessToken}`}
+
+        });
+        displayRenameContentForm.value = false;
+        emit('contentupdated');
+        refreshContentRecord(contentRecord.value.Id);
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
 
 /**
  * watchers
  */
 watch(() => props.recordId, async (newValue)=>{
     refreshContentRecord(newValue);
-});
-watch(() => props.approvalRequestSubmitted, (newValue)=>{
-    console.log('Property approvalRequestSubmitted changed. New Value: %s',JSON.stringify(newValue));
 });
 onBeforeMount(()=>{
     refreshContentRecord(props.recordId);
@@ -488,7 +521,10 @@ onBeforeMount(()=>{
                     <div class="slds-page-header__control">
                         <ul class="slds-button-group-list">
                             <li>
-                                <button class="slds-button slds-button_brand" v-on:click="handleSave">Save</button>
+                                <button class="slds-button slds-button_neutral" v-bind:disabled="approvalRequestSubmitted || isPublished" v-on:click="displayRenameContentForm = !displayRenameContentForm">{{ (displayRenameContentForm) ? 'Cancel Rename Content':'Rename Content' }}</button>
+                            </li>
+                            <li>
+                                <button class="slds-button slds-button_brand" v-bind:disabled="approvalRequestSubmitted || isPublished" v-on:click="handleSave">Save</button>
                             </li>
                             <li>
                                 <button class="slds-button slds-button_text-destructive" v-on:click="issueDebug">Debug</button>
@@ -499,6 +535,22 @@ onBeforeMount(()=>{
             </div>
         </div>
     </nav>
+    <div v-if="displayRenameContentForm" class="slds-grid slds-wrap slds-box slds-theme_default">
+        <div class="slds-col slds-size_1-of-1">
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="txtContentName">Content Name</label>
+                <div class="slds-form-element__control">
+                    <input type="text" class="slds-input" id="txtContentName" v-model="contentRecord.Name" />
+                </div>
+            </div>
+        </div>
+        <div class="slds-col slds-size_1-of-1 slds-var-p-vertical_small">
+            <div class="slds-button-group">
+                <button class="slds-button slds-button_brand" v-on:click="handleSaveInformation">Save</button>
+                <button class="slds-button slds-button_destructive" v-on:click="displayRenameContentForm = false">Cencel</button>
+            </div>
+        </div>
+    </div>
     <!-- END : Header and Actions-->
 
     <ckeditor :editor="editor" v-model="editorData" :config="editorConfig" :disabled="showOnlyComments" />

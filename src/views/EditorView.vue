@@ -33,7 +33,6 @@ onBeforeMount(()=>{
         router.push({name:'home',params:route.params});
     }
     //obtain record data
-    window.console.log('Record ID: %s',JSON.stringify(recordId.value,null,"\t"));
     let recordApiUrl = `${authStore.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${recordId.value}`;
     axios.get(recordApiUrl,{
         headers:{
@@ -41,13 +40,11 @@ onBeforeMount(()=>{
             'Authorization':`Bearer ${authStore.bearerToken}`
         }
     }).then( response => {
-        window.console.log('Response from Record Query: %s',JSON.stringify(response,null,"\t"));
         contentTitle.value = response?.data?.Name !== undefined && response?.data?.Name !== null ? response?.data?.Name:'';
         contentBody.value = response?.data?.Body__c !== undefined && response?.data?.Body__c !== null
             ? response?.data?.Body__c : '';
         displayEditor.value = true;
     }).catch( err => {
-        window.console.log('There was an Error Retrieving the records: %s',JSON.stringify(err.message,null,"\t"));
         authStore.$reset();
         router.push({name:'home',params:route.params});
     });

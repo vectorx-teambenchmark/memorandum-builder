@@ -36,7 +36,6 @@
     const selectedVal = reactive({});
 
     function handleSelection(id){
-        window.console.log('Selection happened. %s', id);
         selectedVal.detail = props.options.find( element => element.value === id);
         emit('selection',selectedVal);
     }
