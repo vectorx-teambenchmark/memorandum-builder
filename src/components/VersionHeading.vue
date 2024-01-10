@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
 import SelectorBox from '../components/SelectorBox.vue';
+import ImLinkManager from '../components/ImLinkManager.vue';
 
 const props = defineProps({
     versionId:{
@@ -33,6 +34,7 @@ const memorandumVersion = ref({});
 const approverId = ref('');
 const statusOptions = ref([]);
 const showCloneForm = ref(false);
+const showPreviewManager = ref(false);
 const showErrMess = ref(false);
 const errMess = ref('');
 const communitiesList = ref([]);
@@ -254,6 +256,26 @@ onBeforeMount(async () => {
 </script>
 
 <template>
+    <!-- BEGIN: IM Manager Modal-->
+    <div v-if="showPreviewManager" role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" v-on:click="showPreviewManager = false">
+                <svg class="slds-button__icon ala-button__icon_large" aria-hidden="true">
+                    <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                </svg>
+                <span class="slds-assistive-text">Cancel and close</span>
+            </button>
+            <div class="slds-modal__content slds-p-around_medium slds-modal__content_headless">
+                <ImLinkManager v-bind:version-id="versionId"/>
+            </div>
+            <div class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" aria-label="Cancel and close" v-on:click="showPreviewManager = false">Close</button>
+            </div>
+        </div>
+    </div>
+    <div v-if="showPreviewManager" role="presentation" class="slds-backdrop slds-backdrop_open"></div>
+    <!-- END: IM Manager Modal-->
+
     <div class="slds-page-header">
         <div class="slds-page-header__row">
             <div class="slds-page-header__col-title">
@@ -288,6 +310,9 @@ onBeforeMount(async () => {
                             </li>
                             <li>
                                 <button class="slds-button slds-button_neutral" v-on:click="redirectToPreview">Preview Version</button>
+                            </li>
+                            <li>
+                                <button class="slds-button slds-button_neutral" v-on:click="showPreviewManager = !showPreviewManager" v-bind:disabled="isPublished">Get Preview URL</button>
                             </li>
                             <li>
                                 <button class="slds-button slds-button_neutral" v-bind:disabled="requestSubmitted || isPublished" v-on:click="handleSubmitApprovalRequest">Submit for Approval</button>

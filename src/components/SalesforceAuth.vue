@@ -13,8 +13,8 @@ const route = useRoute();
 
 function authNavigation(){
     let fullUrl = `${authStore.authUrl}?client_id=${authStore.clientId}&redirect_uri=${authStore.callbackUrl}&response_type=${authStore.responseType}&display=${authStore.displayType}`;
-    if(Array.isArray(route.params?.recordId) && route.params?.recordId?.length > 0){
-        fullUrl += '&state=' + route.params.recordId[0];
+    if(route.params?.recordId !== undefined){
+        fullUrl += '&state=' + route.params.recordId;
     }
     window.location = fullUrl;
 }

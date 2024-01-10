@@ -307,7 +307,8 @@ const editorConfig = {
     salesforceApi: {
         baseUri: props.apiUrl,
         accessToken: props.accessToken,
-        currentUserUri: props.idUrl
+        currentUserUri: props.idUrl,
+        contentId: props.recordId
     },
     simpleUpload: {
         uploadUrl: `${import.meta.env.VITE_IMAGE_PROCESSOR}`

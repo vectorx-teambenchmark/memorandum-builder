@@ -39,11 +39,12 @@ export class CommentsAdapter {
         });
 
         //need to set the current user
-        let idUrl = new URL(this.editor.config.get('salesforceApi').currentUserUri)
+        let idUrl = new URL(this.editor.config.get('salesforceApi').currentUserUri);
         const currentUserId = idUrl.pathname.split('/').pop();
         this.currentUserId = currentUserId;
         this.baseUri = this.editor.config.get('salesforceApi').baseUri;
         this.accessToken = this.editor.config.get('salesforceApi').accessToken;
+        this.currentRecordId = this.editor.config.get('salesforceApi').contentId;
         usersPlugin.defineMe(currentUserId);
 
 
@@ -52,8 +53,9 @@ export class CommentsAdapter {
             baseUri: this.editor.config.get('salesforceApi').baseUri,
             accessToken: this.editor.config.get('salesforceApi').accessToken,
             currentUser: this.currentUserId,
+            currentRecordId: this.currentRecordId,
             async addComment(data){
-                let dataObj = { Content__c: data.content, ThreadId__c: data.threadId };
+                let dataObj = { Content__c: data.content, ThreadId__c: data.threadId, Parent__c: this.currentRecordId };
                 let createCommentUrl = `${this.baseUri}/services/data/v59.0/sobjects/MemorandumContentComment__c/ExternalCommentId__c/${data.commentId}`;
                 try {
                     await axios.patch(createCommentUrl,dataObj,{
@@ -96,12 +98,16 @@ export class CommentsAdapter {
             async addCommentThread(data){
                 //transform into an array of Salesforce objects for a compsite upsert of MemorandumContentComment__c objects
                 const currentThreadId = data.threadId;
+                const recId = this.currentRecordId;
+                console.log('Record ID: %s',JSON.stringify(recId,null,"\t"));
                 let recordArray = data.comments.map(comment => {
-                    let retObj = { attributes: { type: 'MemorandumContentComment__c' }, OwnerId: comment.authorId, 
-                        ThreadId__c:currentThreadId, ExternalCommentId__c: comment.commentId, Content__c: comment.content
-                    }
+                    let retObj = { attributes: { type: 'MemorandumContentComment__c' },
+                        ThreadId__c:currentThreadId, ExternalCommentId__c: comment.commentId, Content__c: comment.content,
+                        Parent__c: recId
+                    };
                     return retObj;
                 });
+                console.log('Record Array to save: %s',JSON.stringify(recordArray,null,"\t"));
                 let compositeData = { allOrNone: true, records:recordArray };
                 let compsiteUpsertUrl = `${this.baseUri}/services/data/v59.0/composite/sobjects/MemorandumContentComment__c/ExternalCommentId__c`;
                 const retObj = { threadId: currentThreadId, comments: data.comments };
@@ -115,7 +121,7 @@ export class CommentsAdapter {
                 }
             },
             async getCommentThread(data){
-                let commentQuery = encodeURIComponent(`SELECT Id, ExternalCommentId__c, ThreadId__c, Content__c, ResolvedOn__c, ResolvedById__c, OwnerId, CreatedDate FROM MemorandumContentComment__c WHERE ThreadId__c ='${data.threadId}' ORDER BY CreatedDate ASC`);
+                let commentQuery = encodeURIComponent(`SELECT Id, ExternalCommentId__c, ThreadId__c, Content__c, ResolvedOn__c, ResolvedById__c, CreatedById, CreatedDate FROM MemorandumContentComment__c WHERE ThreadId__c ='${data.threadId}' ORDER BY CreatedDate ASC`);
                 let commentQueryUrl = `${this.baseUri}/services/data/v59.0/query?q=${commentQuery}`;
                 let response = await axios.get(commentQueryUrl,{
                     headers:{'authorization':`Bearer ${this.accessToken}`},
@@ -131,7 +137,7 @@ export class CommentsAdapter {
                             if(record?.ResolvedById__c !== undefined && record?.ResolvedById__c !== null){
                                 retObj.resolvedBy = record.ResolvedById__c;
                             }
-                            return {commentId: record.ExternalCommentId__c, authorId: record.OwnerId, createdAt: record.CreatedDate, content: record.Content__c, attributes:{}};
+                            return {commentId: record.ExternalCommentId__c, authorId: record.CreatedById, createdAt: record.CreatedDate, content: record.Content__c, attributes:{}};
                         });
                         return retObj;
                     }
