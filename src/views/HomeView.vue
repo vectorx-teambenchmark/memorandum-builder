@@ -40,7 +40,6 @@ async function obtainGlobalDescribe(){
       headers: {'Authorization':`Bearer ${authStore.bearerToken}`},
       responseType:'json'
     });
-    console.log('Global Describe Response: %s',JSON.stringify(globalDescribeResponse.data,null,"\t"));
     sObjectList.value = globalDescribeResponse.data.sobjects;
   }
 }
