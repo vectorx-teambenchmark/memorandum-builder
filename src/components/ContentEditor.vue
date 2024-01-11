@@ -250,7 +250,6 @@ const editorConfig = {
     },
     fontFamily: {
         options:[
-            'default',
             'Poppins',
             'Passenger Display Regular',
             'Passenger Display Bold',
@@ -262,7 +261,7 @@ const editorConfig = {
         ]
     },
     fontSize:{
-        options: [9,10,11,12,14,16,18,20,24,32,48,60]
+        options: [14,9,10,11,12,16,18,20,24,32,48,60]
     },
     image: {
         insert: {
@@ -319,6 +318,16 @@ const editorConfig = {
                 name: 'Heading',
                 element:'p',
                 classes: ['heading']
+            },
+            {
+                name:'Body',
+                element:'p',
+                classes: ['standard']
+            },
+            {
+                name:'Footer',
+                element:'p',
+                classes: ['footer']
             }
         ]
     },
@@ -568,9 +577,29 @@ onBeforeMount(()=>{
     .ck.ck-content {
         padding: 1.2rem;
     }
+    .ck.ck-content body {
+        font-family: 'Poppins';
+        font-size: 12pt;
+        line-height: 18pt;
+        color: black;
+    }
     .heading {
         font-family: 'Passenger Display Extra Bold';
-        font-size: 5rem;
+        font-size: 18pt;
         letter-spacing: .2rem;
+        line-height: 22pt;
+        color: #47B0DE;
     }
+    .standard {
+        font-family: 'Poppins';
+        font-size: 12pt;
+        line-height: 18pt;
+        color: #000;
+    }
+    .footer {
+        font-family: 'Poppins';
+        font-size: 10pt;
+        color: #DEDEDE;
+    }
+
 </style>

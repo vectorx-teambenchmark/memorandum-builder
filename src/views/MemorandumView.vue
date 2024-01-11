@@ -37,13 +37,18 @@ const isPublished = computed(()=>{
 })
 
 function handleCalloutException(e) {
-    switch(e.response.status) {
-        case 401:
-            authStore.$reset();
-            router.push({name:'home'});
-            break;
-        default:
-            console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+    if(e?.response?.status !== undefined){
+        switch(e.response.status) {
+            case 401:
+                authStore.$reset();
+                router.push({name:'home',params:{recordId:recordId.value}});
+                break;
+            default:
+                console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+        }
+    } else {
+        console.error('There was a general Error');
+        console.dir(e);
     }
 }
 function handleVersionDataChange(){
@@ -140,11 +145,13 @@ watch(()=>router.params?.recordId,(newValue)=>{
     }
 })
 onBeforeMount(() => {
-    if(recordId.value.length > 0){
+    if(recordId.value.length > 0 && authStore.isAuthenticated){
         refreshVersionInfo();
         refreshVersionSections();
         refreshVersionContents();
         determineApprovalStatus();
+    } else {
+        router.push({name:'home',params:{recordId:recordId.value}});
     }
 });
 </script>
