@@ -1,21 +1,31 @@
 <script setup>
 import { computed, ref, onBeforeMount, watch } from 'vue';
+import axios from 'axios';
+import useAuthStore from '../stores/auth';
+
 
 const props = defineProps({
     sections: {
         type: Array,
-        default: ()=>{
+        default(){
             return [];
         }
     },
     contents: {
         type: Array,
-        default: ()=>{
+        default(){
             return [];
+        }
+    },
+    versionId: {
+        type: String,
+        default(){
+            return '';
         }
     }
 });
-const emit = defineEmits(['selection']);
+const emit = defineEmits(['selection','sectionadded']);
+const authStore = useAuthStore();
 const sections = computed(()=>{
     return props.sections;
 });
@@ -26,6 +36,8 @@ const contents = computed(()=>{
 const tocData = ref([]);
 const selectedTocItem = ref('');
 const expandedTocItem = ref('');
+const showNewSectionForm = ref(false);
+const newSectionName = ref('');
 
 function generateTocData(){
     let groupedContents = {};
@@ -56,6 +68,29 @@ function generateTocData(){
         });
     }
     tocData.value = completeSections;
+}
+
+async function handleSectionCreate(){
+    let maxValue = 0;
+    if(Array.isArray(sections.value) && sections.value.length > 0){
+        let orderArray = sections.value.map(section => section.Order__c);
+        maxValue = Math.max(...orderArray);
+    }
+    maxValue++;
+    const newSectionData = { 'Name':newSectionName.value, 'Parent__c':props.versionId, 'Order__c':maxValue }
+    try {
+        let newSectionUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumSection__c/`;
+        await axios.post(newSectionUrl,newSectionData,{
+            headers:{'authorization':`Bearer ${authStore.bearerToken}`},
+            responseType:'json'
+        });
+        showNewSectionForm.value = false;
+        newSectionName.value = '';
+        emit('sectionadded');
+    } catch(e) {
+        console.log('There was an error.');
+        console.dir(e);
+    }
 }
 
 watch([sections,contents,expandedTocItem],()=>{
@@ -108,6 +143,20 @@ onBeforeMount(()=>{
                     </ul>
                 </li>
             </ul>
+        </div>
+        <button v-bind:class="{'slds-button':true, 'slds-button_brand':!showNewSectionForm, 'slds-button_destructive':showNewSectionForm, 'slds-var-m-top_x-large':true }" v-on:click="showNewSectionForm = !showNewSectionForm">{{ (!showNewSectionForm) ? 'Add New Section':'Cancel New Section' }}</button>
+        <div v-if="showNewSectionForm" class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-1">
+                <div class="slds-form-element">
+                    <label class="slds-form-element__label" for="txtNewSectionName">Section Name</label>
+                    <div class="slds-form-element__control">
+                        <input type="text" class="slds-input" id="txtNewSectionName" v-model="newSectionName" placeholder="Enter New Section Name..."/>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-var-p-top_small">
+                <button class="slds-button slds-button_brand" v-on:click="handleSectionCreate">Save</button>
+            </div>
         </div>
     </div>
 </template>
