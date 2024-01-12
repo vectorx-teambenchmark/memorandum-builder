@@ -14,6 +14,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const processInstanceArray = ref([]);
+const memberGroupList = ref([]);
 const activeProcessDefinitionId = ref('');
 const activeContextId = ref('');
 const activeActorId = ref('');
@@ -22,37 +23,65 @@ const activeActorId = ref('');
 const versionId = computed(()=>{
     return props.versionId;
 });
+const currentUserId = computed(()=>{
+    let userUrl = new URL(authStore.idUrl);
+    let userId = userUrl.pathname.split('/').pop();
+    return userId;
+});
+const isApprover = computed(()=>{
+    let foundMemberId = memberGroupList.value.find(val => val === activeActorId.value);
+    return activeActorId.value === currentUserId.value || foundMemberId === activeActorId.value;
+});
 
 //functions
 function handleCalloutException(e) {
-    switch(e.response.status) {
-        case 401:
-            authStore.$reset();
-            router.push({name:'home'});
-            break;
-        default:
-            console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
-    }
+    if(e?.response?.status !== undefined){
+        switch(e.response.status) {
+            case 401:
+                authStore.$reset();
+                router.push({name:'home',params:{recordId:versionId.value}});
+                break;
+            default:
+                console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+        }
+    } else {
+        console.error('There was an error.')
+        console.dir(e);
+    }   
 }
-async function obtainActiveProcessInstanceInfo(versionIdIn) {
-    let piQueryInfo = encodeURIComponent(`SELECT Id, LastActorId, LastActor.Name, ProcessDefinitionId, ProcessDefinition.Name, Status, (SELECT ActorId, Comments, StepStatus FROM Steps), (SELECT Id, ActorId, ProcessInstanceId FROM Workitems) FROM ProcessInstance WHERE TargetObjectId = '${versionIdIn}' ORDER By LastModifiedDate DESC`);
-    let piQueryInfoUri = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${piQueryInfo}`;
+async function obtainGroupMemberships(){
+    let groupMemberQuery = encodeURIComponent(`SELECT GroupId, Group.Name FROM GroupMember WHERE UserOrGroupId='${currentUserId.value}'`);
+    let groupMemberUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${groupMemberQuery}`;
     try {
-        let piQueryInfoResponse = await axios.get(piQueryInfoUri,{
+        let groupMemberResponse = await axios.get(groupMemberUrl,{
             headers:{'authorization':`Bearer ${authStore.bearerToken}`},
             responseType:'json'
         });
-        processInstanceArray.value = piQueryInfoResponse.data.records.map(( record ) => {
-            if(record.Status === 'Pending') {
-                activeProcessDefinitionId.value = record.ProcessDefinitionId;
-                activeContextId.value = record.Workitems.records[0]?.Id;
-                activeActorId.value = record.Workitems.records[0]?.ActorId;
+        memberGroupList.value = groupMemberResponse.data.records.map(record => record.GroupId);
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
+async function objectProcessInstanceHistoryInfo(versionIdIn){
+    let pihQueryInfo = encodeURIComponent(`SELECT Id, Status, (SELECT Id, ProcessNodeId, ProcessNode.Name, ActorId, Actor.Name, ElapsedTimeInMinutes, IsPending, StepStatus FROM StepsAndWorkItems) FROM ProcessInstance WHERE TargetObjectId = '${versionIdIn}' AND Status = 'Pending' ORDER BY LastModifiedDate DESC`);
+    let pihQueryInfoUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${pihQueryInfo}`;
+    try {
+        const pihQueryInfoResponse = await axios.get(pihQueryInfoUrl,{
+            headers:{'authorization':`Bearer ${authStore.bearerToken}`},
+            responseType:'json'
+        });
+        let stepAndWorkItems = pihQueryInfoResponse.data.records[0].StepsAndWorkitems.records;        
+        processInstanceArray.value = stepAndWorkItems?.map((item)=>{
+            if(item.StepStatus === 'Pending'){
+                activeProcessDefinitionId.value = pihQueryInfoResponse.data.records[0].Id;
+                activeContextId.value = item.Id;
+                activeActorId.value = item.ActorId;
             }
-            return { 
-                'id':record.Id,
-                'processName':record.ProcessDefinition?.Name, 
-                'actorName':record.LastActor?.Name, 
-                'status':record.Status 
+            return {
+                'id':item.Id,
+                'processName':`${(item?.ProcessNode?.Name === undefined) ? 'N/A':item?.ProcessNode?.Name}`,
+                'actorName':`${(item?.Actor?.Name === undefined) ? 'N/A':item?.Actor?.Name}`,
+                'status':item.StepStatus
             };
         });
     } catch(e) {
@@ -61,8 +90,6 @@ async function obtainActiveProcessInstanceInfo(versionIdIn) {
 }
 async function rejectApprovalStep(){
     let rejectionInfoUri = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
-    //let userUrl = new URL(authStore.idUrl);
-    //let currentUserId = userUrl.pathname.split('/').pop();
     let rejectionData = {requests:[{ 
         actionType:'Reject', 
         contextId:activeContextId.value, 
@@ -74,7 +101,7 @@ async function rejectApprovalStep(){
             responseType:'json'
         });
         emit('approvalProcessStatusChange');
-        obtainActiveProcessInstanceInfo(versionId.value);
+        objectProcessInstanceHistoryInfo(versionId.value);
     } catch(e) {
         handleCalloutException(e);
     } 
@@ -86,14 +113,13 @@ async function approveApprovalStep(){
         contextId:activeContextId.value,
         comments:'Approved in CKEditor App.'
     }]};
-    console.log('The Approval Request Being Sent: %s',JSON.stringify(approvalData,null,"\t"));
     try {
         await axios.post(approvalInfoUri,approvalData,{
             headers:{'authorization':`Bearer ${authStore.bearerToken}`},
             responseType:'json'
         });
         emit('approvalProcessStatusChange');
-        obtainActiveProcessInstanceInfo(versionId.value);
+        objectProcessInstanceHistoryInfo(versionId.value);
     } catch(e) {
         handleCalloutException(e);
     }
@@ -103,12 +129,13 @@ async function approveApprovalStep(){
 //watchers
 watch(versionId, (newValue) => {
     console.log('watcher initiated.');
-    obtainActiveProcessInstanceInfo(newValue);
+    objectProcessInstanceHistoryInfo(newValue);
 });
 //lifecycle functions
 onBeforeMount(()=>{
     if(versionId.value !== undefined && versionId.value.length > 0){
-        obtainActiveProcessInstanceInfo(versionId.value);
+        objectProcessInstanceHistoryInfo(versionId.value);
+        obtainGroupMemberships();
     }
 })
 </script>
@@ -121,7 +148,7 @@ onBeforeMount(()=>{
                     <div class="slds-truncate" title="Process Name">Process Name</div>
                 </th>
                 <th class="" scope="col">
-                    <div class="slds-truncate" title="Last Actor">Last Actor</div>
+                    <div class="slds-truncate" title="Last Actor">Actor</div>
                 </th>
                 <th class="" scope="col">
                     <div class="slds-truncate" title="Status">Status</div>
@@ -143,7 +170,7 @@ onBeforeMount(()=>{
                     <div class="slds-truncate" v-bind:title="item.status">{{ item.status }}</div>
                 </td>
                 <td data-label="Actions">
-                    <div v-if=" item.status === 'Pending' " class="slds-truncate">
+                    <div v-if=" item.status === 'Pending' && isApprover " class="slds-truncate">
                         <button class="slds-button slds-button_icon slds-button_icon-brand" v-on:click="approveApprovalStep" title="Approve">
                             <svg class="slds-button__icon" aria-hidden="true">
                                 <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#check"></use>

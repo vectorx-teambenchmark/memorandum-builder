@@ -3,6 +3,7 @@ import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
+import useMemorandumVersionStore from '../stores/memorandumVersion';
 import SelectorBox from '../components/SelectorBox.vue';
 import ImLinkManager from '../components/ImLinkManager.vue';
 
@@ -26,6 +27,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:tocDisplay','approvalRequestSubmitted']);
 const authStore = useAuthStore();
+const memorandumVersionStore = useMemorandumVersionStore();
 const router = useRouter();
 
 const approvalProcessId = ref('');
@@ -50,11 +52,14 @@ const tocToggleButtonLabel = computed(()=>{
 const versionId = computed(()=>{
     return props.versionId;
 });
+const parentMarketingMaterialId = computed(()=>{
+    return memorandumVersion.value.ParentMarketingMaterial__c;
+})
 const versionName = computed(()=>{
     return memorandumVersion.value.VersionName__c + ((memorandumVersion.value.VersionNotes__c !== undefined && memorandumVersion.value.VersionNotes__c !== null) ? ' - ' + memorandumVersion.value.VersionNotes__c : '');
 });
 const versionStatus = computed(()=>{
-    return memorandumVersion.value.Status__c;
+    return memorandumVersionStore.version.Status__c;
 });
 const canonicalVersionNumber = computed(()=>{
     return memorandumVersion.value.CanonicalVersion__c;
@@ -91,6 +96,9 @@ function redirectToPreview(){
     //let redirectUrl = `${authStore.apiUrl}/servlet/networks/switch?networkId=${previewCommunity.id}&startUrl=${previewStartUrl}`;
     let redirectUrl = `${previewCommunity.siteUrl}${previewStartUrl}`;
     window.open(redirectUrl,'_blank');
+}
+function versionSelectionNavigation(){
+    router.push({name:'versionselect',params:{recordId:parentMarketingMaterialId.value}});
 }
 async function getApprovalProcess(){
     let processApprovalEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
@@ -136,6 +144,16 @@ async function determineDefaultApproverId(versionIdIn){
     try {
         let approverResponse = await axios.get(approverUrl,{headers:{'authorization':`Bearer ${authStore.bearerToken}`},responseType:'json'});
         let approverResponseId = approverResponse.data.records[0]?.ParentMarketingMaterial__r?.Opportunity__r?.Transaction_Director__c;
+        let cmmEntityCountry = approverResponse.data.records[0]?.ParentMarketingMaterial__r?.Opportunity__r?.Benchmark_Entity__r?.Country__c;
+        if(cmmEntityCountry === 'United States'){
+            let groupQuery = encodeURIComponent(`SELECT Id, Name FROM Group WHERE DeveloperName = 'QC_CMM_Pending_Approvals'`);
+            let groupQueryUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${groupQuery}`;
+            let groupQueryResponse = await axios.get(groupQueryUrl,{
+                headers:{'authorization':`Bearer ${authStore.bearerToken}`},
+                responseType:'json'
+            });
+            approverResponseId = groupQueryResponse.data.records[0].Id;
+        }
         approverId.value = (approverResponseId === undefined || approverResponseId === null) ? import.meta.env.VITE_SALESFORCE_DEFAULT_APPROVER : approverResponseId;
     } catch(e) {
         handleCalloutException(e);
@@ -176,7 +194,7 @@ async function handleCloneVersion(versionIdIn){
         newVersionStatus.value = '';
         newVersionDescription.value = '';
         //redirect to new Version
-        router.push({name:'memorandumversion',params:{recordId:newVersionId}});
+        router.push({name:'home',params:{recordId:newVersionId}});
     } catch(e) {
         handleCalloutException(e);
     }
@@ -201,6 +219,7 @@ async function handleSubmitApprovalRequest() {
             headers:{'authorization':`Bearer ${authStore.bearerToken}`},
             responseType:'json'
         });
+        await obtainMemorandumVersionInfo(versionId.value);
         emit('approvalRequestSubmitted');
     } catch(e) {
         handleCalloutException(e);
@@ -294,7 +313,7 @@ onBeforeMount(async () => {
                                 <h1><span class="slds-page-header__title">{{ versionName }}</span></h1>
                             </div>
                         </div>
-                        <p class="slds-page-header__name-meta">{{ versionStatus }} &#9900; Canonical Version {{ canonicalVersionNumber }}</p>
+                        <p class="slds-page-header__name-meta">{{ versionStatus }} &#9900; Canonical Version {{ canonicalVersionNumber }} &#9900; <a v-on:click="versionSelectionNavigation">Back to Version Selection</a> </p>
                     </div>
                 </div>
             </div>

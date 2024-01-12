@@ -56,7 +56,7 @@ async function retrieveVersionsByParentId(cmmId){
         router.push({name:'home', params:{recordId:cmmId}});
     }
     try {
-        let versionQuery = encodeURIComponent(`SELECT Id, Name, CanonicalVersion__c, Status__c, VersionName__c, VersionNotes__c FROM MemorandumVersion__c WHERE ParentMarketingMaterial__c = '${cmmId}'`);
+        let versionQuery = encodeURIComponent(`SELECT Id, Name, CanonicalVersion__c, Status__c, VersionName__c, VersionNotes__c FROM MemorandumVersion__c WHERE ParentMarketingMaterial__c = '${cmmId}' ORDER BY CreatedDate DESC`);
         let versionQueryUri = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${versionQuery}`;
         let versionQueryResponse = await axios({
             method:'get',

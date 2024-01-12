@@ -3,6 +3,7 @@ import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
+import useMemorandumVersionStore from '../stores/memorandumVersion';
 import VersionHeading from '../components/VersionHeading.vue';
 import VersionTocManager from '../components/VersionTocManager.vue';
 import VersionProcessManager from '../components/VersionProcessManager.vue';
@@ -10,6 +11,7 @@ import SectionManager from '../components/SectionManager.vue';
 import ContentEditor from '../components/ContentEditor.vue';
 
 const authStore = useAuthStore();
+const memorandumVersionStore = useMemorandumVersionStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -92,6 +94,7 @@ async function refreshVersionInfo(){
             responseType:'json'
         });
         versionInfo.value = versionInfoResponse.data;
+        memorandumVersionStore.setVersionInfo(versionInfo.value);
     } catch(e) {
         handleCalloutException(e);
     }
@@ -112,6 +115,13 @@ async function refreshVersionSections(){
             let isLast = (index === (arr.length-1)) ? true:false;
             return {Id, Name, Order__c, attributes, isFirst, isLast};
         });
+        //if the selectedRecord is a MemorandumSection__c type and it cannot be found, it wwas removed and needs to be emptied.
+        if(isSectionSelected.value){
+            let selectedRecordIndex = versionSections.value.findIndex( item => item.Id === selectedRecord.value.Id);
+            if(selectedRecordIndex < 0){
+                selectedRecord.value = {};
+            }
+        }
     } catch(e) {
         handleCalloutException(e);
     }
@@ -137,13 +147,15 @@ async function refreshVersionContents(){
     }
 }
 watch(()=>router.params?.recordId,(newValue)=>{
+    console.log('router recordId Paramter changed.');
     if(newValue.length > 0){
+        selectedRecord.value = {};
         refreshVersionInfo();
         refreshVersionSections();
         refreshVersionContents();
         determineApprovalStatus();
     }
-})
+});
 onBeforeMount(() => {
     if(recordId.value.length > 0 && authStore.isAuthenticated){
         refreshVersionInfo();
@@ -162,7 +174,7 @@ onBeforeMount(() => {
             <VersionHeading v-bind:version-id="recordId" v-bind:allow-approval-request-submittal="requestSubmitted" v-model:toc-display="versionDisplayToc" v-on:approval-request-submitted="handleVersionDataChange"/>
         </div>
         <div v-if="requestSubmitted" class="slds-col slds-size_1-of-1 slds-var-p-around_small ">
-            <VersionProcessManager v-bind:version-id="recordId" v-on:approval-process-status-change="determineApprovalStatus"/>
+            <VersionProcessManager v-bind:version-id="recordId" v-on:approval-process-status-change="handleVersionDataChange"/>
         </div>
         <div v-if="versionDisplayToc" class="slds-col slds-size_1-of-5 slds-var-p-around_small">
             <VersionTocManager v-bind:sections="versionSections" v-bind:contents="versionContents" 

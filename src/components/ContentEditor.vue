@@ -28,6 +28,7 @@ import { PasteFromOfficeEnhanced } from '@ckeditor/ckeditor5-paste-from-office-e
 import { RemoveFormat } from '@ckeditor/ckeditor5-remove-format';
 import { SelectAll } from '@ckeditor/ckeditor5-select-all';
 import { SlashCommand } from '@ckeditor/ckeditor5-slash-command';
+import { SourceEditing } from '@ckeditor/ckeditor5-source-editing';
 import { SpecialCharacters, SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
          SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText } from '@ckeditor/ckeditor5-special-characters';
 import { Style } from '@ckeditor/ckeditor5-style';
@@ -210,6 +211,7 @@ const editorConfig = {
         SelectAll,
         SimpleUploadAdapter,
         SlashCommand,
+        SourceEditing,
         Strikethrough, 
         SpecialCharacters, 
         SpecialCharactersArrows, 
@@ -262,6 +264,16 @@ const editorConfig = {
     },
     fontSize:{
         options: [14,9,10,11,12,16,18,20,24,32,48,60]
+    },
+    htmlSupport:{
+        allow:[
+            {
+                name: 'div',
+                attributes: true,
+                classes: true,
+                styles: true
+            }
+        ]
     },
     image: {
         insert: {
@@ -361,9 +373,9 @@ const editorConfig = {
                 data: '<figure class="table"><table><tbody><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></tbody></table></figure>'
             },
             {
-                title: 'Executive Summary',
-                description: 'Two column layout for Executive Summary Information.',
-                data:`<figure class="table" style="width:100%;"><table><tbody><tr><td style="vertical-align:top;width:50%;"><figure class="table" style="width:95%;"><table><tbody><tr><td style="padding:.5rem;vertical-align:top;"><span style="color:hsl(252,31%,47%);font-family:Poppins;font-size:24px;">BUSINESS DESCRIPTION</span></td></tr><tr><td style="padding:.5rem;vertical-align:top;"><p style="text-align:justify;">Bacon ipsum dolor amet pork chop tri-tip cupim meatloaf, pig drumstick tenderloin pork. Sirloin chicken strip steak, jowl salami short ribs pastrami t-bone capicola pork loin rump. Capicola doner cupim t-bone, shoulder venison porchetta spare ribs sirloin alcatra meatloaf andouille pig. Meatball swine landjaeger leberkas ribeye pastrami, ball tip jowl ham hock.</p></td></tr><tr><td style="padding:.5rem;vertical-align:top;"><span style="color:hsl(252,31%,47%);font-family:Poppins;font-size:24px;">HEADQUARTERS</span></td></tr><tr><td style="padding:.5rem;vertical-align:top;">Tampa, FL, United States</td></tr><tr><td style="padding:.5rem;vertical-align:top;"><span style="color:hsl(252,31%,47%);font-family:Poppins;font-size:24px;">WEBSITE</span></td></tr><tr><td style="padding:.5rem;vertical-align:top;"><a href="https://www.benchmarkinternational.com">https://www.benchmarkinternational.com</a></td></tr><tr><td><figure class="table" style="width:100.24%;"><table class="ck-table-resized" style="background-color:hsl(0,2%,90%);"><colgroup><col style="width:4.83%;"><col style="width:95.17%;"></colgroup><tbody><tr><td style="padding:.5rem;vertical-align:top;" colspan="2"><span style="color:hsl(252,31%,47%);font-family:Poppins;font-size:24px;">KEY FEATURES</span></td></tr><tr><td style="padding:.5rem;vertical-align:top;">&nbsp;</td><td style="padding:.5rem;vertical-align:top;"><ul><li>Flank salami burgdoggen shank drumstick.</li><li>Ball tip boudin cupim tongue pork chop salami rump ham.</li><li>Doner frankfurter landjaeger ball tip short loin.</li><li>Chuck porchetta meatloaf, frankfurter rump short loin strip steak bresaola swine doner t-bone.</li></ul></td></tr></tbody></table></figure></td></tr></tbody></table></figure></td><td style="vertical-align:top;width:50%;"><figure class="table" style="width:95%;"><table><tbody><tr><td style="padding:.5rem;vertical-align:top;"><span style="color:hsl(252,31%,47%);font-family:Poppins;font-size:24px;">MARKETS SERVED</span></td></tr><tr><td style="padding:.5rem;vertical-align:top;"><p style="text-align:justify;">Landjaeger picanha drumstick short loin, buffalo chuck pork chop salami capicola beef hamburger. Boudin shoulder meatball, flank pancetta biltong fatback beef ribs leberkas spare ribs ball tip. Salami picanha landjaeger meatball, chuck pork chop cupim sirloin.&nbsp;</p></td></tr><tr><td style="padding:.5rem;vertical-align:top;"><span style="color:hsl(252,31%,47%);font-family:Poppins;font-size:24px;">REAL ESTATE</span></td></tr><tr><td style="padding:.5rem;vertical-align:top;"><p style="text-align:justify;">Jowl venison short loin t-bone hamburger pork chop ball tip pastrami doner tenderloin cow sausage pork loin tail boudin. Sirloin filet mignon hamburger jerky pork chop chislic turducken beef ribs brisket kielbasa ham chuck pork belly burgdoggen. Turkey tail shank, swine filet mignon jowl biltong cow salami ball tip pork loin tri-tip ham shankle alcatra.</p></td></tr><tr><td style="padding:.5rem;vertical-align:top;"><span style="color:hsl(252,31%,47%);font-family:Poppins;font-size:24px;">OWNERSHIP</span></td></tr><tr><td style="padding:.5rem;vertical-align:top;"><p style="text-align:justify;">Landjaeger picanha drumstick short loin, buffalo chuck pork chop salami capicola beef hamburger. Boudin shoulder meatball, flank pancetta biltong fatback beef ribs leberkas spare ribs ball tip.</p></td></tr><tr><td><figure class="table" style="width:100.12%;"><table class="ck-table-resized" style="background-color:hsl(0,2%,90%);"><colgroup><col style="width:4.83%;"><col style="width:95.17%;"></colgroup><tbody><tr><td style="padding:.5rem;vertical-align:top;" colspan="2"><span style="color:hsl(252,31%,47%);font-family:Poppins;font-size:24px;">OPPORTUNITIES</span></td></tr><tr><td style="padding:.5rem;vertical-align:top;">&nbsp;</td><td style="padding:.5rem;vertical-align:top;"><ul><li><strong>Expansion: </strong>Expand operations geographically to reach new markets across the US and internationally</li><li><strong>AI: </strong>Continue developing an AI-driven content and marketing service for the existing client base</li><li><strong>Additional Services: </strong>Further pursue the high demand fractional marketing services</li><li><strong>New Partner Services: </strong>Develop HubSpot premium services to better serve the company’s current HubSpot clientele</li></ul></td></tr></tbody></table></figure></td></tr></tbody></table></figure><p>&nbsp;</p></td></tr></tbody></table></figure>`
+                title: 'Key Features & Opportunities',
+                description: 'Two column layout for with a table in each column for Key Features and Opportunities.',
+                data:`<div class="template slds-grid slds-wrap"><div class="template slds-col slds-size_1-of-2"><figure class="table" style="width:80%;"><table style="background-color:hsl(0,0%,84%);"><tbody><tr><td><span style="color:hsl(205,32%,39%);font-size:20px;"><strong>KEY FEATURES</strong></span></td></tr><tr><td><ul><li>Hamburger pork pork belly jerky chuck capicola turducken bresaola.</li><li>Pork belly rump chislic kielbasa pastrami, short ribs frankfurter picanha tri-tip.</li><li>Sirloin pancetta pastrami strip steak.</li><li>Alcatra hamburger cupim, pastrami porchetta frankfurter brisket cow sirloin pork loin prosciutto turducken buffalo.</li></ul></td></tr></tbody></table></figure></div><div class="template slds-col slds-size_1-of-2"><figure class="table" style="width:80%;"><table style="background-color:hsl(0,0%,84%);"><tbody><tr><td><span style="color:hsl(205,32%,39%);font-size:20px;"><strong>OPPORTUNITIES</strong></span></td></tr><tr><td><ul><li>Bacon ipsum dolor amet bresaola strip steak tenderloin, meatball andouille pig corned beef frankfurter tri-tip.&nbsp;</li><li>Spare ribs pork loin frankfurter beef, ribeye fatback boudin bacon ham pastrami ham hock hamburger burgdoggen.</li><li>Turkey tongue picanha shankle.</li><li>Pork loin leberkas ham capicola porchetta corned beef.</li></ul></td></tr></tbody></table></figure></div></div>`
             },
             {
                 title:'Highlight Box',
@@ -387,7 +399,7 @@ const editorConfig = {
             }
         ]
     },
-    toolbar: ['style',
+    toolbar: ['sourceEditing','style',
         'alignment','bold','italic','underline','strikethrough','subscript','superscript','removeFormat','formatPainter','|',
         'fontBackgroundColor','fontColor','fontSize','fontFamily','|','link','bulletedList','numberedList','selectAll','|',
         'horizontalLine','outdent','indent','|','imageUpload','htmlEmbed','blockQuote','insertTable','mediaEmbed','insertTemplate',
@@ -576,12 +588,14 @@ onBeforeMount(()=>{
     }
     .ck.ck-content {
         padding: 1.2rem;
-    }
-    .ck.ck-content body {
         font-family: 'Poppins';
         font-size: 12pt;
         line-height: 18pt;
         color: black;
+        text-align: justify;
+    }
+    .ck.ck-content div.template {
+        border: dotted 1px red; 
     }
     .heading {
         font-family: 'Passenger Display Extra Bold';
