@@ -100,7 +100,7 @@ async function refreshVersionInfo(){
     }
 }
 async function refreshVersionSections(){
-    let sectionQuery = encodeURIComponent(`SELECT Id, Name, Order__c FROM MemorandumSection__c WHERE Parent__c ='${recordId.value}' ORDER BY Order__c ASC`);
+    let sectionQuery = encodeURIComponent(`SELECT Id, Name, Order__c, Parent__c FROM MemorandumSection__c WHERE Parent__c ='${recordId.value}' ORDER BY Order__c ASC`);
     let sectionEndpoint = queryEndpoint.value + sectionQuery;
     try {
         let sectionResponse = await axios({
@@ -177,8 +177,8 @@ onBeforeMount(() => {
             <VersionProcessManager v-bind:version-id="recordId" v-on:approval-process-status-change="handleVersionDataChange"/>
         </div>
         <div v-if="versionDisplayToc" class="slds-col slds-size_1-of-5 slds-var-p-around_small">
-            <VersionTocManager v-bind:sections="versionSections" v-bind:contents="versionContents" 
-                v-on:selection="handleRecordSelection"/>
+            <VersionTocManager v-bind:version-id="recordId" v-bind:sections="versionSections" v-bind:contents="versionContents" 
+                v-on:selection="handleRecordSelection" v-on:sectionadded="refreshVersionSections"/>
         </div>
         <div v-bind:class="{'slds-col':true, 'slds-size_1-of-1':!versionDisplayToc,'slds-size_4-of-5':versionDisplayToc,'slds-var-p-around_small':true}">
             <SectionManager v-if="isSectionSelected" v-bind:section-id="selectedRecord.Id" v-on:sectionupdate="refreshVersionSections" 
