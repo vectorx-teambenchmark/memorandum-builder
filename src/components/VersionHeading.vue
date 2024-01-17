@@ -39,7 +39,7 @@ const showCloneForm = ref(false);
 const showPreviewManager = ref(false);
 const showErrMess = ref(false);
 const errMess = ref('');
-const communitiesList = ref([]);
+const communityBase = ref('');
 
 const newVersionCanonicalVersion = ref(0);
 const newVersionStatus = ref('');
@@ -90,11 +90,11 @@ function handleStatusSelection(eventItem){
 }
 function redirectToPreview(){
     //find the networkId of the Preview URL
-    let previewCommunity = communitiesList.value.find(communityElement => communityElement.name === 'Invite Confirmation');
-    let previewStartUrl = `/cim-preview?c__rid=${versionId.value}`;
+    //let previewCommunity = communitiesList.value.find(communityElement => communityElement.name === 'Invite Confirmation');
+    let previewStartUrl = `${communityBase.value}/cim-preview?c__rid=${versionId.value}`;
     //build base of redirectUrl
     //let redirectUrl = `${authStore.apiUrl}/servlet/networks/switch?networkId=${previewCommunity.id}&startUrl=${previewStartUrl}`;
-    let redirectUrl = `${previewCommunity.siteUrl}${previewStartUrl}`;
+    let redirectUrl = `${previewStartUrl}`;
     window.open(redirectUrl,'_blank');
 }
 function versionSelectionNavigation(){
@@ -111,14 +111,11 @@ async function getApprovalProcess(){
         handleCalloutException(e);
     }
 }
-async function getCommunities(){
-    let communitiesUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/connect/communities/?status=Live`;
+async function getCommunityUrl(){
+    let communityUrl = `${authStore.apiUrl}/services/apexrest/imservice/?sitename=${encodeURIComponent('Invite Confirmation')}`;
     try {
-        let communitiesResponse = await axios.get(communitiesUrl,{
-            headers: { 'authorization':`Bearer ${authStore.bearerToken}`},
-            responseType:'json'
-        });
-        communitiesList.value = communitiesResponse.data.communities;
+        let communityResponse = await axios.get(communityUrl,{headers:{'authorization':`Bearer ${authStore.bearerToken}`}});
+        communityBase.value = communityResponse.data;
     } catch(e) {
         handleCalloutException(e);
     }
@@ -267,7 +264,7 @@ watch(() => props.versionId,(newValue)=>{
 //lifecycle functions
 onBeforeMount(async () => {
     getApprovalProcess();
-    getCommunities();
+    getCommunityUrl();
     determineDefaultApproverId(versionId.value);
     obtainMemorandumVersionInfo(versionId.value);
     obtainMemorandumVersionStatusPicklist();

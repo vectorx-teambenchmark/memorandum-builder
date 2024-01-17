@@ -41,10 +41,7 @@ const expirationDisplayDate = computed(()=>{
 });
 const expirationDisplayUrl = computed(()=>{
     //get the right community
-    let retVal = '';
-    let selectedCommunity = communitiesList.value.find(comm => comm.name === 'Invite Confirmation');
-    retVal = (selectedCommunity !== undefined) ? selectedCommunity.siteUrl : '';
-    return `${retVal}/cim-preview?c__id=${versionInfo.value.ExternalId__c}`;
+    return `${communityBase.value}/cim-preview?c__id=${versionInfo.value.ExternalId__c}`;
 })
 
 //reactive properties
@@ -52,6 +49,7 @@ const versionInfo = ref({});
 const communitiesList = ref([]);
 const showUpdateMessage = ref(false);
 const updateMessage = ref('');
+const communityBase = ref('');
 
 //internal functions
 function handleCalloutException(e) {
@@ -103,6 +101,15 @@ async function getCommunities(){
         handleCalloutException(e);
     }
 }
+async function getCommunityUrl(){
+    let communityUrl = `${authStore.apiUrl}/services/apexrest/imservice/?sitename=${encodeURIComponent('Invite Confirmation')}`;
+    try {
+        let communityResponse = await axios.get(communityUrl,{headers:{'authorization':`Bearer ${authStore.bearerToken}`}});
+        communityBase.value = communityResponse.data;
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
 async function handlePreviewGenerationInfo(){
     let dt = DateTime.now().plus({'months':1});
     let versionUpdateData = { ExternalUrlExpiration__c: `${dt.toFormat('yyyy-MM-dd')}` };
@@ -136,7 +143,7 @@ async function handleExpirationUpdate(){
 //lifecycle methods
 onBeforeMount(() => {
     obtainVersionInfo(props.versionId);
-    getCommunities();
+    getCommunityUrl();
 });
 </script>
 
