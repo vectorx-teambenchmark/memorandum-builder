@@ -69,6 +69,14 @@ function resetMessage(){
         showUpdateMessage.value = false;
     },3000);
 }
+function handleCopyLinkToClipboard(){
+    navigator.clipboard.writeText(expirationDisplayUrl.value).then(()=>{
+        console.log(`copied link ${expirationDisplayUrl.value} to clipboard`);
+    }).catch(()=>{
+        console.log('Crap - sorry, couldn\'t grab link.');
+    })
+}
+
 async function obtainVersionInfo(versionIdIn) {
     try {
         //build Link to obtain record info
@@ -148,6 +156,7 @@ onBeforeMount(() => {
                     <input type="text" id="txtExternalUrl" disabled v-model="expirationDisplayUrl" class="slds-input"/>
                 </div>
             </div>
+            <button class="slds-button slds-button_neutral slds-var-m-top_small" v-on:click="handleCopyLinkToClipboard">Copy To Clipboard</button>
             <p class="slds-text-longform">If you need to extend the expiration date of the URL, please provide the new date below and click 'Update'.</p>
             <div class="slds-form-element">
                 <label class="slds-form-element__label" for="txtExpDate">External URL Expiration</label>
