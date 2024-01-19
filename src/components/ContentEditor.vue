@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router';
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import { Autosave } from '@ckeditor/ckeditor5-autosave';
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
-//import { Comments } from '@ckeditor/ckeditor5-comments';
+import { Comments } from '@ckeditor/ckeditor5-comments';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
 import { Alignment } from '@ckeditor/ckeditor5-alignment';
 import { Bold, Italic, Strikethrough, Subscript, Superscript, Underline } from '@ckeditor/ckeditor5-basic-styles';
@@ -36,7 +36,7 @@ import { Table, TableCaption, TableCellProperties, TableColumnResize, TablePrope
 import { Template } from '@ckeditor/ckeditor5-template';
 import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
-//import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
+import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
 import useAuthStore from '../stores/auth';
 
 const props = defineProps({
@@ -177,6 +177,7 @@ const editorConfig = {
         Autosave,
         BlockQuote,
         Bold,
+        Comments,
         DocumentList,
         DocumentListProperties,
         Essentials,
@@ -232,9 +233,15 @@ const editorConfig = {
         Underline,
         WordCount
     ],
+    extraPlugins: [ CommentsAdapter ],
     autosave: {
         save( editor ) {
             handleAutoSave( editor.getData() );
+        }
+    },
+    comments:{
+        editorConfig: {
+            extraPlugins: [ Bold, Italic, DocumentList ]
         }
     },
     fontBackgroundColor: {
@@ -307,6 +314,12 @@ const editorConfig = {
                 defaultItem: 'imageStyle:margin-left'
             }
         ]
+    },
+    salesforceApi: {
+        baseUri: props.apiUrl,
+        accessToken: props.accessToken,
+        currentUserUri: props.idUrl,
+        contentId: props.recordId
     },
     simpleUpload: {
         uploadUrl: import.meta.env.VITE_IMAGE_PROCESSOR
@@ -440,7 +453,7 @@ const editorConfig = {
         'alignment','bold','italic','underline','strikethrough','subscript','superscript','removeFormat','formatPainter','|',
         'fontBackgroundColor','fontColor','fontSize','fontFamily','|','link','bulletedList','numberedList','selectAll','|',
         'horizontalLine','outdent','indent','|','imageUpload','htmlEmbed','blockQuote','insertTable','mediaEmbed','insertTemplate',
-        'specialCharacters','undo','redo','findAndReplace'
+        'specialCharacters','undo','redo','findAndReplace','|','comment','commentsArchive'
     ],
     licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE,
 };
