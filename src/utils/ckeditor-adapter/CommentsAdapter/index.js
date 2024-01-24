@@ -1,7 +1,9 @@
 import axios from "axios";
+import { Plugin } from '@ckeditor/ckeditor5-core';
 
-export class CommentsAdapter {
+export class CommentsAdapter extends Plugin {
     constructor(editor) {
+        super();
         this.editor = editor;
     }
     static get requires() {
@@ -203,5 +205,8 @@ export class CommentsAdapter {
                 }
             }
         };
+        commentsRepositoryPlugin.on('addComment',(evt)=>{
+            evt.source.adapter.currentRecordId = sessionStorage.getItem('currentRecordId');
+        },{ priority: 'high' });
     }
 }
