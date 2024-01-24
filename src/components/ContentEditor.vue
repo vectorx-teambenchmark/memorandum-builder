@@ -647,6 +647,9 @@ onBeforeMount(()=>{
         color: black;
         text-align: justify;
     }
+    .ck.ck-content p {
+        text-align: justify;
+    }
     .ck.ck-content div.template {
         border: dotted 1px red; 
     }
