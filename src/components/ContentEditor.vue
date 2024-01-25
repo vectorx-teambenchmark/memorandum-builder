@@ -692,6 +692,9 @@ onBeforeMount(()=>{
     .blue-border-1 {
         border: 2px solid  hsl(214,73%,58%);
     }
+    ::selection {
+        background: red;
+    }
 
 
 </style>
