@@ -139,18 +139,20 @@ async function handleMoveContentDown(contentId){
     }
 }
 async function handleDeleteContent(contentId){
-    try {
-        let contentDeleteEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${contentId}`;
-        await axios({
-            method:'delete',
-            url:contentDeleteEndpoint,
-            responseType:'json',
-            headers:{'authorization':`Bearer ${authStore.bearerToken}`}
-        });
-        emit('contentupdate');
-        await obtainContentInfo();
-    } catch(e) {
-        handleCalloutException(e);
+    if(window.confirm('Are you sure you want to delete this content?')){
+        try {
+            let contentDeleteEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${contentId}`;
+            await axios({
+                method:'delete',
+                url:contentDeleteEndpoint,
+                responseType:'json',
+                headers:{'authorization':`Bearer ${authStore.bearerToken}`}
+            });
+            emit('contentupdate');
+            await obtainContentInfo();
+        } catch(e) {
+            handleCalloutException(e);
+        }
     }
 }
 async function handleCreateNewContent(){
