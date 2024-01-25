@@ -340,6 +340,16 @@ const editorConfig = computed (()=>{ return {
                     name:'Footer',
                     element:'p',
                     classes: ['footer']
+                },
+                {
+                    name:'Medium Grey Border',
+                    element:'figure',
+                    classes:['grey-border']
+                },
+                {
+                    name:'Blue 1 Border',
+                    element:'figure',
+                    classes:['blue-border-1']
                 }
             ]
         },
@@ -426,6 +436,11 @@ const editorConfig = computed (()=>{ return {
                     title: 'Layout - Two Column Layout - 66/33',
                     description: 'Two column layout using no tables 3 to 1 column ratio',
                     data: `<p>&nbsp;</p><div class="template slds-grid slds-wrap"><div class="template slds-col slds-size_2-of-3 slds-var-p-right_small"><p style="margin-left:0px;text-align:justify;">Bacon ipsum dolor amet shankle chislic ribeye andouille beef ribs meatloaf spare ribs. Doner pancetta rump chuck jowl cow pork belly bacon chislic. Fatback doner jowl pancetta meatball chicken. Boudin ham alcatra, doner frankfurter short loin turkey salami landjaeger pig. Leberkas meatball ribeye capicola pig cow tongue biltong strip steak bresaola beef tail drumstick shoulder kevin.</p><p style="margin-left:0px;text-align:justify;">Salami bacon jerky, ham hock pastrami ribeye pig turducken biltong shankle pork chop short ribs tenderloin doner short loin. Short ribs tongue kevin shankle, shoulder salami meatball chuck. Kevin flank ribeye frankfurter. Buffalo shankle landjaeger shoulder beef. Porchetta meatloaf drumstick pancetta, ribeye t-bone bresaola short ribs. Tongue capicola spare ribs pork loin salami prosciutto pig ground round rump kielbasa t-bone shankle turducken andouille.</p></div><div class="template slds-col slds-size_1-of-3 slds-var-p-left_small"><p style="text-align:justify;">Tenderloin short ribs frankfurter swine boudin meatloaf tri-tip ham t-bone. Chislic landjaeger t-bone tri-tip, buffalo filet mignon strip steak capicola alcatra tongue doner. Beef ribs turkey pancetta chuck tenderloin, jerky flank kielbasa turducken jowl bacon. Kielbasa burgdoggen spare ribs fatback. Ham kielbasa short loin, tri-tip biltong jowl spare ribs turkey turducken. Tri-tip swine shoulder beef ribs doner turducken sirloin buffalo meatloaf jerky strip steak. Leberkas chislic burgdoggen, pancetta ham fatback chuck meatball short ribs bacon pork chop tenderloin sirloin.</p><p style="margin-left:0px;text-align:justify;">Short loin porchetta flank ball tip pork filet mignon. Venison pork chop tail chicken ribeye boudin. Landjaeger jerky spare ribs t-bone ham pork belly. Pancetta pork belly short ribs pork loin hamburger tail. Chislic turducken swine hamburger porchetta. Leberkas swine flank strip steak turducken chuck, pork venison ham.</p><p style="margin-left:0px;text-align:justify;">Biltong bacon buffalo salami short ribs. Pork loin tail cow, bacon jerky boudin jowl chuck. Leberkas buffalo tail jowl salami pig pastrami picanha drumstick. Fatback chuck salami alcatra frankfurter ham swine shoulder tenderloin. Corned beef tongue turducken ball tip, kevin meatloaf tail. Strip steak pastrami cow, pork chop beef ribeye prosciutto pork loin kielbasa meatball ham hock andouille filet mignon beef ribs landjaeger. Chicken sirloin beef, pork belly tail jowl hamburger salami andouille.</p></div></div><p>&nbsp;</p>`
+                },
+                {
+                    title: 'Layout - Two Column Layout - 80/20',
+                    description: 'Two Column Layout using no tables 4 to 1 column ratio',
+                    data: `<p>&nbsp;</p><div class="template slds-grid slds-wrap"><div class="slds-col slds-size_4-of-5 slds-var-p-right_small template"><p>Bacon ipsum dolor amet pork doner pig corned beef. Landjaeger burgdoggen cupim kevin, flank tongue porchetta ham hock t-bone short ribs brisket. Tenderloin tri-tip shank short ribs pig. Salami leberkas kielbasa chuck. Corned beef kielbasa strip steak, buffalo pork loin meatloaf meatball andouille shoulder tenderloin chicken ham brisket ham hock pork. Bacon sirloin filet mignon jowl flank biltong prosciutto venison rump frankfurter picanha turducken kevin.</p></div><div class="slds-col slds-size_1-of-5 slds-var-p-left_small template"><p><span style="background-color:rgb(255,255,255);color:rgb(51,51,51);font-size:16px;">Bacon ipsum dolor amet pork doner pig corned beef. Landjaeger burgdoggen cupim kevin, flank tongue porchetta ham hock t-bone short ribs brisket. Tenderloin tri-tip shank short ribs pig. Salami leberkas kielbasa chuck. Corned beef kielbasa strip steak, buffalo pork loin meatloaf meatball andouille shoulder tenderloin chicken ham brisket ham hock pork. Bacon sirloin filet mignon jowl flank biltong prosciutto venison rump frankfurter picanha turducken kevin.</span></p></div></div><p>&nbsp;</p>`
                 },
                 {
                     title: 'Layout - Two Column Layout - 3 Sections 2 / 1',
@@ -671,5 +686,12 @@ onBeforeMount(()=>{
         font-size: 10pt;
         color: #DEDEDE;
     }
+    .grey-border {
+        border: 2px solid hsl(0,0%,65%);
+    }
+    .blue-border-1 {
+        border: 2px solid  hsl(214,73%,58%);
+    }
+
 
 </style>
