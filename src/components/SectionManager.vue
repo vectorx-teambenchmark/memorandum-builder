@@ -135,16 +135,18 @@ async function obtainAllSections(){
 }
 
 async function deleteSection(){
-    let endpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumSection__c/${props.sectionId}`;
-    try {
-        await axios({
-            method:'delete',
-            url:endpoint,
-            headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
-        });
-        emit('sectiondelete');
-    } catch(e) {
-        handleCalloutException(e);
+    if(window.confirm('Are you sure you want to delete this section?')){
+        let endpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumSection__c/${props.sectionId}`;
+        try {
+            await axios({
+                method:'delete',
+                url:endpoint,
+                headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
+            });
+            emit('sectiondelete');
+        } catch(e) {
+            handleCalloutException(e);
+        }
     }
 }
 async function updateSection(){
