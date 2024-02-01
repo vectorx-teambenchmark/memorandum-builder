@@ -559,6 +559,9 @@ watch(() => props.recordId, async (newValue)=>{
     sessionStorage.setItem('currentRecordId',newValue);
     refreshContentRecord(newValue);
 });
+/**
+ * Lifecycle methods
+ */
 onBeforeMount(()=>{
     refreshContentRecord(props.recordId);
     sessionStorage.setItem('currentRecordId',props.recordId);
@@ -637,13 +640,13 @@ onBeforeMount(()=>{
         <div class="slds-col slds-size_1-of-1 slds-var-p-vertical_small">
             <div class="slds-button-group">
                 <button class="slds-button slds-button_brand" v-on:click="handleSaveInformation">Save</button>
-                <button class="slds-button slds-button_destructive" v-on:click="displayRenameContentForm = false">Cencel</button>
+                <button class="slds-button slds-button_destructive" v-on:click="displayRenameContentForm = false">Cancel</button>
             </div>
         </div>
     </div>
     <!-- END : Header and Actions-->
 
-    <ckeditor :editor="editor" v-model="editorData" :config="editorConfig" :disabled="showOnlyComments" />
+    <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" :disabled="showOnlyComments" />
 </template>
 
 <style>
