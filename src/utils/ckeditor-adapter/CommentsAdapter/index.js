@@ -1,4 +1,3 @@
-import { Plugin } from '@ckeditor/ckeditor5-core';
 import axios from "axios";
 import { Plugin } from '@ckeditor/ckeditor5-core';
 
