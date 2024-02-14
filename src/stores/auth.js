@@ -49,7 +49,6 @@ const useAuthStore = defineStore('authStore',()=>{
      * it will return a default auth object with the bearerToken and apiUrl empty.
      */
     function rehydrateAuthInfo(){
-        window.console.log('All Environment Variables: %s',JSON.stringify(import.meta.env,null,"\t"));
         let authObj = {
             bearerToken: '',
             apiUrl:'',
