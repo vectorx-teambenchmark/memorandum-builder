@@ -170,7 +170,7 @@ const showOnlyComments = computed(()=>{
     return props.approvalRequestSubmitted || props.isPublished;
 });
 const ckeditor = CKEditor.component;
-const editor = reactive(ClassicEditor);
+const editor = ClassicEditor;
 const editorConfig = computed (()=>{ return {
         plugins: [
             Alignment,
