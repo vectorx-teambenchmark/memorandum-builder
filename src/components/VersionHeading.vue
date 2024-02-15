@@ -4,8 +4,9 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
 import useMemorandumVersionStore from '../stores/memorandumVersion';
-import SelectorBox from '../components/SelectorBox.vue';
-import ImLinkManager from '../components/ImLinkManager.vue';
+
+const SelectorBox = import('../components/SelectorBox.vue');
+const ImLinkManager = import('../components/ImLinkManager.vue');
 
 const props = defineProps({
     versionId:{
