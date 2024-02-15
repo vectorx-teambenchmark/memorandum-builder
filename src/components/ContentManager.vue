@@ -3,7 +3,8 @@ import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
-import Toggle from './Toggle.vue';
+
+const Toggle = import('./Toggle.vue');
 
 const props = defineProps({
     sectionId: {
@@ -18,6 +19,7 @@ const props = defineProps({
         }
     }
 });
+
 const emit = defineEmits(['contentselection','contentupdate']);
 const authStore = useAuthStore();
 const router = useRouter();
