@@ -170,7 +170,7 @@ const showOnlyComments = computed(()=>{
     return props.approvalRequestSubmitted || props.isPublished;
 });
 const ckeditor = CKEditor.component;
-const editor = reactive(ClassicEditor);
+const editorInstance = reactive(ClassicEditor);
 const editorConfig = computed (()=>{ return {
         plugins: [
             Alignment,
@@ -556,6 +556,7 @@ async function handleSaveInformation(){
  * watchers
  */
 watch(() => props.recordId, async (newValue)=>{
+    console.log('The record Id has changed. %s',newValue);
     sessionStorage.setItem('currentRecordId',newValue);
     refreshContentRecord(newValue);
 });
