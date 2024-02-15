@@ -4,12 +4,11 @@ import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
 import useMemorandumVersionStore from '../stores/memorandumVersion';
-
-const VersionHeading = import('../components/VersionHeading.vue');
-const VersionTocManager = import('../components/VersionTocManager.vue');
-const VersionProcessManager = import('../components/VersionProcessManager.vue');
-const SectionManager = import('../components/SectionManager.vue');
-const ContentEditor = import('../components/ContentEditor.vue');
+import VersionHeading from '../components/VersionHeading.vue';
+import VersionTocManager from '../components/VersionTocManager.vue';
+import VersionProcessManager from '../components/VersionProcessManager.vue';
+import SectionManager from '../components/SectionManager.vue';
+import ContentEditor from '../components/ContentEditor.vue';
 
 const authStore = useAuthStore();
 const memorandumVersionStore = useMemorandumVersionStore();

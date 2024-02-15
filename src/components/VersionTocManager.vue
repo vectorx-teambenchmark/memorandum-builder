@@ -3,7 +3,6 @@ import { computed, ref, onBeforeMount, watch } from 'vue';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
 
-
 const props = defineProps({
     sections: {
         type: Array,

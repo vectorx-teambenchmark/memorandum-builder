@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { reactive, ref, onBeforeMount, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import CKEditor from '@ckeditor/ckeditor5-vue';
 import { Autosave } from '@ckeditor/ckeditor5-autosave';
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
 import { Comments } from '@ckeditor/ckeditor5-comments';
@@ -37,8 +38,6 @@ import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
 import useAuthStore from '../stores/auth';
-
-const CKEditor = import('@ckeditor/ckeditor5-vue');
 
 const props = defineProps({
    recordId: {

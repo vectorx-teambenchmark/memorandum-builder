@@ -1,8 +1,7 @@
 <script setup>
     import { onBeforeMount, ref } from 'vue';
     import axios from 'axios';
-
-    const SelectorBox = import('./SelectorBox.vue');
+    import SelectorBox from './SelectorBox.vue';
 
     const props = defineProps({
         apiToken: {
