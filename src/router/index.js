@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
-import MemorandumView from '../views/MemorandumView.vue';
-import CmmView from '../views/CmmView.vue';
-import VersionSelectorView from '../views/VersionSelectorView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -15,7 +12,7 @@ const router = createRouter({
     {
       path: '/cmm',
       name: 'cmm',
-      component: CmmView
+      component: () => import('../views/CmmView.vue')
     },
     {
       path: '/editor/:recordId?',
@@ -25,12 +22,12 @@ const router = createRouter({
     {
       path: '/memorandumversion/:recordId?',
       name: 'memorandumversion',
-      component: MemorandumView
+      component: () => import('../views/MemorandumView.vue')
     },
     {
       path: '/versionselect/:recordId?',
       name: 'versionselect',
-      component: VersionSelectorView
+      component: () => import('../views/VersionSelectorView.vue')
     }
   ]
 });
