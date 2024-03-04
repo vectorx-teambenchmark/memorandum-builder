@@ -206,8 +206,7 @@ async function handleSubmitApprovalRequest() {
             { 
                 actionType:'Submit', 
                 contextActorId: currentUserId, 
-                contextId: versionId.value, 
-                nextApproverIds:[approverId.value], 
+                contextId: versionId.value,
                 processDefinitionNameOrId: approvalProcessId.value }]};
     //make the post to the approvals endpoint.
     try {
