@@ -101,64 +101,64 @@ const router = useRouter();
 const colorArray = computed(()=>{
     return [
             {
-                color: 'hsl(0,0%,65%)',
-                name: 'Medium Grey'
+                color: '#EEEEEE',
+                name: '#EEEEEE'
             },
             {
-                color: 'hsl(214,73%,58%)',
-                name: 'Blue 1'
+                color: '#AAAAAA',
+                name: '#AAAAAA'
             },
             {
-                color: 'hsl(205,32%,39%)',
-                name: 'Slate Blue'
+                color: '#47B0DE',
+                name: '#47B0DE'
             },
             {
-                color: 'hsl(0,0%,100%)',
-                name: 'White'
+                color: '#468FE8',
+                name: '#468FE8'
             },
             {
-                color: 'hsl(0,0%,84%)',
-                name: 'off-white'
+                color: '#5989B2',
+                name: '#5989B2'
             },
             {
-                color: 'hsl(199,66%,56%)',
-                name: 'Blue 2'
+                color: '#4A7395',
+                name: '#4A7395'
             },
             {
-                color: 'hsl(209,34%,51%)',
-                name: 'Slate Blue Light'
+                color: '#446988',
+                name: '#446988'
             },
             {
-                color: 'hsl(29,28%,55%)',
-                name: 'Brown'
+                color: '#D5B176',
+                name: '#D5B176'
             },
             {
-                color: 'hsl(19,36%,45%)',
-                name: 'Bronze'
+                color: '#B18F6A',
+                name: '#B18F6A'
             },
             {
-                color: 'hsl(207,25%,23%)',
-                name: 'Slate Blue Dark'
+                color: '#B3704F',
+                name: '#B3704F'
             },
             {
-                color: 'hsl(0,0%,17%)',
-                name: 'Dark Grey'
+                color: '#9C9D98',
+                name: '#9C9D98'
             },
             {
-                color: 'hsl(36,49%,64%)',
-                name: 'Light Brown'
+                color: '#7B7F80',
+                name: '#7B7F80'
             },
             {
-                color: 'hsl(20,40%,51%)',
-                name: 'High Bronze'
+                color: '#495A6F',
+                name: '#495A6F'
             },
             {
-                color: 'hsl(213,21%,36%)',
-                name: 'Slate Blue Medium'
+                color: '#2C3C49',
+                name: '#2C3C49'
             },
             {
-                color: 'hsl(0,0,27)',
-                name: 'Dark Grey'
+                color: '#222222',
+                name: '#222222'
             }
         ];
 });
@@ -663,7 +663,7 @@ onBeforeMount(()=>{
         font-family: 'Poppins';
         font-size: 12pt;
         line-height: 18pt;
-        color: black;
+        color: #222;
         text-align: justify;
     }
     .ck.ck-content p {
@@ -683,7 +683,7 @@ onBeforeMount(()=>{
         font-family: 'Poppins';
         font-size: 12pt;
         line-height: 18pt;
-        color: #000;
+        color: #222;
     }
     .footer {
         font-family: 'Poppins';
