@@ -170,7 +170,7 @@ const showOnlyComments = computed(()=>{
     return props.approvalRequestSubmitted || props.isPublished;
 });
 const ckeditor = CKEditor.component;
-const editorInstance = reactive(ClassicEditor);
+const editorInstance = ClassicEditor;
 const editorConfig = computed (()=>{ return {
         plugins: [
             Alignment,
@@ -477,6 +477,7 @@ const editorData = ref('');
 const contentName = computed(()=>{
     return (contentRecord.value?.Name !== undefined) ? contentRecord.value.Name:'';
 });
+const editorRef = ref({});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
 const displayRenameContentForm = ref(false);
@@ -520,6 +521,14 @@ function closeModal(){
 function issueDebug(){
     console.log(editorData.value);
 }
+function handleEditorInit(editor){
+    
+    if(showOnlyComments.value){
+        editor.plugins.get('CommentsOnly').isEnabled = true;
+    }
+    
+   editorRef.value = editor;
+}
 async function refreshContentRecord(recordIdVal){
     try {
         let contentEndpoint = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/memorandumcontent__c/${recordIdVal}`;
@@ -560,6 +569,10 @@ watch(() => props.recordId, async (newValue)=>{
     sessionStorage.setItem('currentRecordId',newValue);
     refreshContentRecord(newValue);
 });
+watch(() => props.approvalRequestSubmitted,(newValue,oldValue)=>{
+    console.log('The Request Submitted property has changed: new Value: %s, old Value: %s',newValue,oldValue);
+    editorRef.value.plugins.get('CommentsOnly').isEnabled = newValue;
+})
 /**
  * Lifecycle methods
  */
@@ -647,7 +660,7 @@ onBeforeMount(()=>{
     </div>
     <!-- END : Header and Actions-->
 
-    <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" :disabled="showOnlyComments" />
+    <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit"/>
 </template>
 
 <style>

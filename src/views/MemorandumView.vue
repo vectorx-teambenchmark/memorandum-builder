@@ -55,6 +55,8 @@ function handleCalloutException(e) {
 }
 function handleVersionDataChange(){
     refreshVersionInfo();
+    refreshVersionSections();
+    refreshVersionContents();
     determineApprovalStatus();
 }
 function handleRecordSelection(selectionId){
