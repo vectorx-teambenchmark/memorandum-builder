@@ -4,9 +4,8 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
 import useMemorandumVersionStore from '../stores/memorandumVersion';
-
-const SelectorBox = import('../components/SelectorBox.vue');
-const ImLinkManager = import('../components/ImLinkManager.vue');
+import SelectorBox from '../components/SelectorBox.vue';
+import ImLinkManager from '../components/ImLinkManager.vue';
 
 const props = defineProps({
     versionId:{
@@ -207,14 +206,14 @@ async function handleSubmitApprovalRequest() {
             { 
                 actionType:'Submit', 
                 contextActorId: currentUserId, 
-                contextId: versionId.value, 
-                nextApproverIds:[approverId.value], 
+                contextId: versionId.value,
+                nextApproverIds:[approverId.value],
                 processDefinitionNameOrId: approvalProcessId.value }]};
     //make the post to the approvals endpoint.
     try {
         let approvalRequestEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/process/approvals/`;
         await axios.post(approvalRequestEndpoint,dataObj,{
-            headers:{'authorization':`Bearer ${authStore.bearerToken}`},
+            headers:{'Authorization':`Bearer ${authStore.bearerToken}`},
             responseType:'json'
         });
         await obtainMemorandumVersionInfo(versionId.value);
@@ -222,6 +221,25 @@ async function handleSubmitApprovalRequest() {
     } catch(e) {
         handleCalloutException(e);
     }
+}
+async function handleSubmitRecallRequest() {
+    var requestBody = {
+        'versionId':versionId.value
+    };
+    var recallUrl = `${authStore.apiUrl}/services/apexrest/imservice`;
+    try {
+        await axios({
+            method:'patch',
+            url:recallUrl,
+            headers:{'Authorization':`Bearer ${authStore.bearerToken}`},
+            responseType:'json',
+            data:requestBody
+        });
+        emit('approvalRequestSubmitted');
+    } catch(e) {
+        handleCalloutException(e);
+    }
+
 }
 async function obtainMemorandumVersionStatusPicklist(){
     let endpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/describe`;
@@ -332,7 +350,8 @@ onBeforeMount(async () => {
                                 <button class="slds-button slds-button_neutral" v-on:click="showPreviewManager = !showPreviewManager" v-bind:disabled="isPublished">Get Preview URL</button>
                             </li>
                             <li>
-                                <button class="slds-button slds-button_neutral" v-bind:disabled="requestSubmitted || isPublished" v-on:click="handleSubmitApprovalRequest">Submit for Approval</button>
+                                <button v-if="!requestSubmitted" class="slds-button slds-button_neutral" v-bind:disabled="requestSubmitted || isPublished" v-on:click="handleSubmitApprovalRequest">Submit for Approval</button>
+                                <button v-if="requestSubmitted" class="slds-button slds-button_neutral" v-on:click="handleSubmitRecallRequest">Recall From Approval</button>
                             </li>
                             <li>
                                 <button class="slds-button slds-button_neutral" v-bind:disabled="isPublished" v-on:click="handlePublishVersionRequest">Publish Version</button>

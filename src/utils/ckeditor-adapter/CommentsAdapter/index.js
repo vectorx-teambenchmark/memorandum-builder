@@ -6,9 +6,21 @@ export class CommentsAdapter extends Plugin {
         super();
         this.editor = editor;
     }
+    /**
+     * Static property that returns an array of dependencies
+     */
     static get requires() {
         return ['CommentsRepository'];
     }
+    
+    provideParentId(params) {
+        console.log('Provide Parent Id Called. Params: %s',JSON.stringify(params,null,"\t"));
+    }
+
+    /**
+     * 
+     * @returns Array 
+     */
     async getUserData() {
         let baseUrl = this.editor.config.get('salesforceApi').baseUri;
         let accessToken = this.editor.config.get('salesforceApi').accessToken;

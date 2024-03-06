@@ -3,10 +3,8 @@ import { computed, onBeforeMount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
-
-const SelectorBox = import('../components/SelectorBox.vue');
-const MemorandumVersionForm = import('../components/MemorandumVersionForm.vue');
-
+import SelectorBox from '../components/SelectorBox.vue';
+import MemorandumVersionForm from '../components/MemorandumVersionForm.vue';
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();

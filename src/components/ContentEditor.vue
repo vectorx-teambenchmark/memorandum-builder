@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { reactive, ref, onBeforeMount, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import CKEditor from '@ckeditor/ckeditor5-vue';
 import { Autosave } from '@ckeditor/ckeditor5-autosave';
 import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
 import { Comments } from '@ckeditor/ckeditor5-comments';
@@ -37,8 +38,6 @@ import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
 import useAuthStore from '../stores/auth';
-
-const CKEditor = import('@ckeditor/ckeditor5-vue');
 
 const props = defineProps({
    recordId: {
@@ -102,64 +101,64 @@ const router = useRouter();
 const colorArray = computed(()=>{
     return [
             {
-                color: 'hsl(0,0%,65%)',
-                name: 'Medium Grey'
+                color: '#EEEEEE',
+                name: '#EEEEEE'
             },
             {
-                color: 'hsl(214,73%,58%)',
-                name: 'Blue 1'
+                color: '#AAAAAA',
+                name: '#AAAAAA'
             },
             {
-                color: 'hsl(205,32%,39%)',
-                name: 'Slate Blue'
+                color: '#47B0DE',
+                name: '#47B0DE'
             },
             {
-                color: 'hsl(0,0%,100%)',
-                name: 'White'
+                color: '#468FE8',
+                name: '#468FE8'
             },
             {
-                color: 'hsl(0,0%,84%)',
-                name: 'off-white'
+                color: '#5989B2',
+                name: '#5989B2'
             },
             {
-                color: 'hsl(199,66%,56%)',
-                name: 'Blue 2'
+                color: '#4A7395',
+                name: '#4A7395'
             },
             {
-                color: 'hsl(209,34%,51%)',
-                name: 'Slate Blue Light'
+                color: '#446988',
+                name: '#446988'
             },
             {
-                color: 'hsl(29,28%,55%)',
-                name: 'Brown'
+                color: '#D5B176',
+                name: '#D5B176'
             },
             {
-                color: 'hsl(19,36%,45%)',
-                name: 'Bronze'
+                color: '#B18F6A',
+                name: '#B18F6A'
             },
             {
-                color: 'hsl(207,25%,23%)',
-                name: 'Slate Blue Dark'
+                color: '#B3704F',
+                name: '#B3704F'
             },
             {
-                color: 'hsl(0,0%,17%)',
-                name: 'Dark Grey'
+                color: '#9C9D98',
+                name: '#9C9D98'
             },
             {
-                color: 'hsl(36,49%,64%)',
-                name: 'Light Brown'
+                color: '#7B7F80',
+                name: '#7B7F80'
             },
             {
-                color: 'hsl(20,40%,51%)',
-                name: 'High Bronze'
+                color: '#495A6F',
+                name: '#495A6F'
             },
             {
-                color: 'hsl(213,21%,36%)',
-                name: 'Slate Blue Medium'
+                color: '#2C3C49',
+                name: '#2C3C49'
             },
             {
-                color: 'hsl(0,0,27)',
-                name: 'Dark Grey'
+                color: '#222222',
+                name: '#222222'
             }
         ];
 });
@@ -171,7 +170,7 @@ const showOnlyComments = computed(()=>{
     return props.approvalRequestSubmitted || props.isPublished;
 });
 const ckeditor = CKEditor.component;
-const editor = reactive(ClassicEditor);
+const editorInstance = ClassicEditor;
 const editorConfig = computed (()=>{ return {
         plugins: [
             Alignment,
@@ -478,6 +477,7 @@ const editorData = ref('');
 const contentName = computed(()=>{
     return (contentRecord.value?.Name !== undefined) ? contentRecord.value.Name:'';
 });
+const editorRef = ref({});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
 const displayRenameContentForm = ref(false);
@@ -521,6 +521,14 @@ function closeModal(){
 function issueDebug(){
     console.log(editorData.value);
 }
+function handleEditorInit(editor){
+    
+    if(showOnlyComments.value){
+        editor.plugins.get('CommentsOnly').isEnabled = true;
+    }
+    
+   editorRef.value = editor;
+}
 async function refreshContentRecord(recordIdVal){
     try {
         let contentEndpoint = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/memorandumcontent__c/${recordIdVal}`;
@@ -557,9 +565,17 @@ async function handleSaveInformation(){
  * watchers
  */
 watch(() => props.recordId, async (newValue)=>{
+    console.log('The record Id has changed. %s',newValue);
     sessionStorage.setItem('currentRecordId',newValue);
     refreshContentRecord(newValue);
 });
+watch(() => props.approvalRequestSubmitted,(newValue,oldValue)=>{
+    console.log('The Request Submitted property has changed: new Value: %s, old Value: %s',newValue,oldValue);
+    editorRef.value.plugins.get('CommentsOnly').isEnabled = newValue;
+})
+/**
+ * Lifecycle methods
+ */
 onBeforeMount(()=>{
     refreshContentRecord(props.recordId);
     sessionStorage.setItem('currentRecordId',props.recordId);
@@ -638,13 +654,13 @@ onBeforeMount(()=>{
         <div class="slds-col slds-size_1-of-1 slds-var-p-vertical_small">
             <div class="slds-button-group">
                 <button class="slds-button slds-button_brand" v-on:click="handleSaveInformation">Save</button>
-                <button class="slds-button slds-button_destructive" v-on:click="displayRenameContentForm = false">Cencel</button>
+                <button class="slds-button slds-button_destructive" v-on:click="displayRenameContentForm = false">Cancel</button>
             </div>
         </div>
     </div>
     <!-- END : Header and Actions-->
 
-    <ckeditor :editor="editor" v-model="editorData" :config="editorConfig" :disabled="showOnlyComments" />
+    <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit"/>
 </template>
 
 <style>
@@ -660,7 +676,7 @@ onBeforeMount(()=>{
         font-family: 'Poppins';
         font-size: 12pt;
         line-height: 18pt;
-        color: black;
+        color: #222;
         text-align: justify;
     }
     .ck.ck-content p {
@@ -680,7 +696,7 @@ onBeforeMount(()=>{
         font-family: 'Poppins';
         font-size: 12pt;
         line-height: 18pt;
-        color: #000;
+        color: #222;
     }
     .footer {
         font-family: 'Poppins';

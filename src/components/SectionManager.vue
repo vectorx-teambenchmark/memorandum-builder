@@ -3,9 +3,7 @@ import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import useAuthStore from '../stores/auth';
 import axios from 'axios';
-//import ContentManager from './ContentManager.vue';
-
-const ContentManager = import('./ContentManager.vue');
+import ContentManager from './ContentManager.vue';
 
 const props = defineProps({
     sectionId: {

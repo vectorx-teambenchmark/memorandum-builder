@@ -3,8 +3,7 @@ import { computed, onBeforeMount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
-
-const Toggle = import('./Toggle.vue');
+import Toggle from './Toggle.vue';
 
 const props = defineProps({
     sectionId: {
