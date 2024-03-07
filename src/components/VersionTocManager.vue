@@ -21,6 +21,12 @@ const props = defineProps({
         default(){
             return '';
         }
+    },
+    inApproval: {
+        type: String,
+        default(){
+            return false;
+        }
     }
 });
 const emit = defineEmits(['selection','sectionadded']);
@@ -143,7 +149,7 @@ onBeforeMount(()=>{
                 </li>
             </ul>
         </div>
-        <button v-bind:class="{'slds-button':true, 'slds-button_brand':!showNewSectionForm, 'slds-button_destructive':showNewSectionForm, 'slds-var-m-top_x-large':true }" v-on:click="showNewSectionForm = !showNewSectionForm">{{ (!showNewSectionForm) ? 'Add New Section':'Cancel New Section' }}</button>
+        <button v-if="!inApproval" v-bind:class="{'slds-button':true, 'slds-button_brand':!showNewSectionForm, 'slds-button_destructive':showNewSectionForm, 'slds-var-m-top_x-large':true }" v-on:click="showNewSectionForm = !showNewSectionForm">{{ (!showNewSectionForm) ? 'Add New Section':'Cancel New Section' }}</button>
         <div v-if="showNewSectionForm" class="slds-grid slds-wrap">
             <div class="slds-col slds-size_1-of-1">
                 <div class="slds-form-element">
