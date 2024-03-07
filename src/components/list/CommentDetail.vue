@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeMount } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 import { DateTime } from 'luxon';
 
 const props = defineProps({
@@ -23,6 +23,11 @@ const commentText = computed(()=> {
     return props.comment.Text__c;
 });
 
+/**
+ * Internal Component Properties
+ */
+const showComment = ref(false);
+
 
 onBeforeMount(() => {
     console.dir(props.comment);
@@ -36,9 +41,12 @@ onBeforeMount(() => {
             <div class="slds-media__figure">
                 <button class="slds-button slds-button_icon"
                     title="Toggle details for Review proposals for EBC deck with larger team and have marketing review this"
-                    aria-controls="task-item-expanded-65" aria-expanded="true">
-                    <svg class="slds-button__icon slds-timeline__details-action-icon" aria-hidden="true">
+                    aria-controls="task-item-expanded-65" v-bind:aria-expanded="showComment" v-on:click="showComment = !showComment">
+                    <svg v-if="!showComment" class="slds-button__icon slds-timeline__details-action-icon" aria-hidden="true">
                         <use xlink:href="@/assets/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                    </svg>
+                    <svg v-if="showComment" class="slds-button__icon slds-timeline__details-action-icon" aria-hidden="true">
+                        <use xlink:href="@/assets/icons/utility-sprite/svg/symbols.svg#chevronright"></use>
                     </svg>
                     <span class="slds-assistive-text">Toggle details</span>
                 </button>
@@ -65,7 +73,7 @@ onBeforeMount(() => {
                     </div>
                 </div>
                 
-                <article
+                <article v-if="!showComment"
                     class="slds-box slds-timeline__item_details slds-theme_shade slds-m-top_x-small slds-m-horizontal_xx-small slds-p-around_medium"
                     id="task-item-expanded-65">
                     
