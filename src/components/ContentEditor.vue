@@ -101,64 +101,64 @@ const router = useRouter();
 const colorArray = computed(()=>{
     return [
             {
-                color: 'hsl(0,0%,65%)',
-                name: 'Medium Grey'
+                color: '#EEEEEE',
+                name: '#EEEEEE'
             },
             {
-                color: 'hsl(214,73%,58%)',
-                name: 'Blue 1'
+                color: '#AAAAAA',
+                name: '#AAAAAA'
             },
             {
-                color: 'hsl(205,32%,39%)',
-                name: 'Slate Blue'
+                color: '#47B0DE',
+                name: '#47B0DE'
             },
             {
-                color: 'hsl(0,0%,100%)',
-                name: 'White'
+                color: '#468FE8',
+                name: '#468FE8'
             },
             {
-                color: 'hsl(0,0%,84%)',
-                name: 'off-white'
+                color: '#5989B2',
+                name: '#5989B2'
             },
             {
-                color: 'hsl(199,66%,56%)',
-                name: 'Blue 2'
+                color: '#4A7395',
+                name: '#4A7395'
             },
             {
-                color: 'hsl(209,34%,51%)',
-                name: 'Slate Blue Light'
+                color: '#446988',
+                name: '#446988'
             },
             {
-                color: 'hsl(29,28%,55%)',
-                name: 'Brown'
+                color: '#D5B176',
+                name: '#D5B176'
             },
             {
-                color: 'hsl(19,36%,45%)',
-                name: 'Bronze'
+                color: '#B18F6A',
+                name: '#B18F6A'
             },
             {
-                color: 'hsl(207,25%,23%)',
-                name: 'Slate Blue Dark'
+                color: '#B3704F',
+                name: '#B3704F'
             },
             {
-                color: 'hsl(0,0%,17%)',
-                name: 'Dark Grey'
+                color: '#9C9D98',
+                name: '#9C9D98'
             },
             {
-                color: 'hsl(36,49%,64%)',
-                name: 'Light Brown'
+                color: '#7B7F80',
+                name: '#7B7F80'
             },
             {
-                color: 'hsl(20,40%,51%)',
-                name: 'High Bronze'
+                color: '#495A6F',
+                name: '#495A6F'
             },
             {
-                color: 'hsl(213,21%,36%)',
-                name: 'Slate Blue Medium'
+                color: '#2C3C49',
+                name: '#2C3C49'
             },
             {
-                color: 'hsl(0,0,27)',
-                name: 'Dark Grey'
+                color: '#222222',
+                name: '#222222'
             }
         ];
 });
@@ -170,7 +170,7 @@ const showOnlyComments = computed(()=>{
     return props.approvalRequestSubmitted || props.isPublished;
 });
 const ckeditor = CKEditor.component;
-const editorInstance = reactive(ClassicEditor);
+const editorInstance = ClassicEditor;
 const editorConfig = computed (()=>{ return {
         plugins: [
             Alignment,
@@ -380,12 +380,12 @@ const editorConfig = computed (()=>{ return {
                 {
                     title: 'Entity Registration (2 Column)',
                     description: 'Two column table at 50% width for Entity Registration Details',
-                    data: `<p>&nbsp;</p><figure class="table" style="width:70%;"><table style="background-color:rgb(242,242,242);border:2px solid rgb(162,147,133);"><tbody><tr><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:50%;" colspan="2"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>ENTITY REGISTRATION</strong></span></td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Legal Name</td><td style="padding:.15rem;text-align:center;width:50%;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">FEIN/EIN</td><td style="padding:.15rem;text-align:center;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Incorporation Date / Date Business Started</td><td style="padding:.15rem;text-align:center;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Company Structure</td><td style="padding:.15rem;text-align:center;">[STATE] [BUSINESS STRUCTURE]</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Tax Structure</td><td style="padding:.15rem;text-align:center;">TAX FORM NUMBER</td></tr></tbody></table></figure>`
+                    data: `<figure class="table" style="width:70%;"><table style="background-color:rgb(242,242,242);border:2px solid rgb(177,143,106);"><tbody><tr><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:50%;" colspan="2"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>ENTITY REGISTRATION</strong></span></td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Legal Name</td><td style="padding:.15rem;text-align:center;width:50%;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">FEIN/EIN</td><td style="padding:.15rem;text-align:center;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Incorporation Date / Date Business Started</td><td style="padding:.15rem;text-align:center;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Company Structure</td><td style="padding:.15rem;text-align:center;">[STATE] [BUSINESS STRUCTURE]</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Tax Structure</td><td style="padding:.15rem;text-align:center;">TAX FORM NUMBER</td></tr></tbody></table></figure>`
                 },
                 {
                     title: 'Entity Registration (4 Column)',
                     description: 'Four column, two row table set at a table width of 80% for Entity Registration Details',
-                    data:`<p>&nbsp;</p><figure class="table" style="width:80%;"><table style="background-color:rgb(242,242,242);"><tbody><tr><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>LEGAL NAME</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>FEI/EIN NUMBER</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>DATE ESTABLISHED</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>OWNER</strong></span></td></tr><tr><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td></tr></tbody></table></figure>`
+                    data:`<p>&nbsp;</p><figure class="table" style="width:80%;"><table style="background-color:rgb(242,242,242);"><tbody><tr><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>LEGAL NAME</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>FEI/EIN NUMBER</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>DATE ESTABLISHED</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>OWNER</strong></span></td></tr><tr><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td></tr></tbody></table></figure>`
                 },
                 {
                     title: 'Key Features & Opportunities',
@@ -410,17 +410,17 @@ const editorConfig = computed (()=>{ return {
                 {
                     title:'Table - Bordered with Colored Heading',
                     description: 'A table that has a solid border and a colored header - Listing Properites',
-                    data: `<p>&nbsp;</p><figure class="table" style="width:100%;"><table style="border:2px solid rgb(162,147,133);"><tbody><tr><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:28%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>ADDRESS</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:18%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>SQ. FT.</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:18%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>MONTHLY RENT</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:18%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>LEASE TERMS</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:18%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>OWNER</strong></span></td></tr><tr><td style="text-align:center;width:28%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td></tr><tr><td style="text-align:center;width:28%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td></tr></tbody></table></figure><p>&nbsp;</p>`
+                    data: `<p>&nbsp;</p><figure class="table" style="width:100%;"><table style="border:2px solid rgb(177,143,106);"><tbody><tr><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:28%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>ADDRESS</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:18%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>SQ. FT.</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:18%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>MONTHLY RENT</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:18%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>LEASE TERMS</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:18%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>OWNER</strong></span></td></tr><tr><td style="text-align:center;width:28%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td></tr><tr><td style="text-align:center;width:28%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td><td style="text-align:center;width:18%;">&nbsp;</td></tr></tbody></table></figure><p>&nbsp;</p>`
                 },
                 {
                     title: 'Table - Product and GP Margin Display',
                     description: 'Two column table to display Products and the Related GP Margins',
-                    data: `<p>&nbsp;</p><figure class="table" style="width:100%;"><table style="background-color:rgb(242,242,242);"><tbody><tr><td style="background-color:rgb(162,147,133);padding:.2rem;vertical-align:top;width:50%;"><span style="color:hsl(0,0%,100%);"><strong>Product / Service</strong></span></td><td style="background-color:rgb(162,147,133);padding:.2rem;text-align:right;vertical-align:top;width:50%;"><span style="color:hsl(0,0%,100%);"><strong>GP Margin</strong></span></td></tr><tr><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td></tr><tr><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td></tr><tr><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td></tr><tr><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td></tr></tbody></table></figure><p>&nbsp;</p>`
+                    data: `<p>&nbsp;</p><figure class="table" style="width:100%;"><table style="background-color:rgb(242,242,242);"><tbody><tr><td style="background-color:rgb(177,143,106);padding:.2rem;vertical-align:top;width:50%;"><span style="color:hsl(0,0%,100%);"><strong>Product / Service</strong></span></td><td style="background-color:rgb(177,143,106);padding:.2rem;text-align:right;vertical-align:top;width:50%;"><span style="color:hsl(0,0%,100%);"><strong>GP Margin</strong></span></td></tr><tr><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td></tr><tr><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td></tr><tr><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td></tr><tr><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td><td style="padding:.2rem;vertical-align:top;width:50%;">&nbsp;</td></tr></tbody></table></figure><p>&nbsp;</p>`
                 },
                 {
                     title: 'Table - Shareholder Table',
                     description: 'A Three colum shaded table with colored header - For shareholder listing',
-                    data: `<p>&nbsp;</p><figure class="table" style="width:100%;"><table style="background-color:rgb(242,242,242);border:2px solid rgb(162,147,133);"><tbody><tr><td style="background-color:rgb(162,147,133);padding:.5rem;width:33%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>SHAREHOLDER</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:33%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>% OWNED</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:33%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>POSITION</strong></span></td></tr><tr><td style="padding:.3rem;width:33%;">Insert Text</td><td style="padding:.3rem;text-align:center;width:33%;">X%</td><td style="padding:.3rem;text-align:center;width:33%;">Insert Text</td></tr><tr><td style="padding:.3rem;width:33%;">Insert Text</td><td style="padding:.3rem;text-align:center;width:33%;">X%</td><td style="padding:.3rem;text-align:center;width:33%;">Insert Text</td></tr><tr><td style="padding:.3rem;width:33%;">Insert Text</td><td style="padding:.3rem;text-align:center;width:33%;">X%</td><td style="padding:.3rem;text-align:center;width:33%;">Insert Text</td></tr></tbody></table></figure><p>&nbsp;</p>`
+                    data: `<figure class="table" style="width:100%;"><table style="background-color:rgb(242,242,242);border:2px solid rgb(177,143,106);"><tbody><tr><td style="background-color:rgb(177,143,106);padding:.5rem;width:33%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>SHAREHOLDER</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:33%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>% OWNED</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:33%;"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>POSITION</strong></span></td></tr><tr><td style="padding:.3rem;width:33%;">Insert Text</td><td style="padding:.3rem;text-align:center;width:33%;">X%</td><td style="padding:.3rem;text-align:center;width:33%;">Insert Text</td></tr><tr><td style="padding:.3rem;width:33%;">Insert Text</td><td style="padding:.3rem;text-align:center;width:33%;">X%</td><td style="padding:.3rem;text-align:center;width:33%;">Insert Text</td></tr><tr><td style="padding:.3rem;width:33%;">Insert Text</td><td style="padding:.3rem;text-align:center;width:33%;">X%</td><td style="padding:.3rem;text-align:center;width:33%;">Insert Text</td></tr></tbody></table></figure>`
                 },
                 {
                     title: 'Layout - Two Column Layout - Evenly Distributed',
@@ -464,10 +464,10 @@ const editorConfig = computed (()=>{ return {
                 }
             ]
         },
-        toolbar: ['sourceEditing','style',
+        toolbar: ['style',
             'alignment','bold','italic','underline','strikethrough','subscript','superscript','removeFormat','formatPainter','|',
             'fontBackgroundColor','fontColor','fontSize','fontFamily','|','link','bulletedList','numberedList','selectAll','|',
-            'horizontalLine','outdent','indent','|','imageUpload','htmlEmbed','blockQuote','insertTable','mediaEmbed','insertTemplate',
+            'horizontalLine','outdent','indent','|','imageUpload','blockQuote','insertTable','mediaEmbed','insertTemplate',
             'specialCharacters','undo','redo','findAndReplace','|','comment','commentsArchive'
         ],
         licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE,
@@ -477,6 +477,7 @@ const editorData = ref('');
 const contentName = computed(()=>{
     return (contentRecord.value?.Name !== undefined) ? contentRecord.value.Name:'';
 });
+const editorRef = ref({});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
 const displayRenameContentForm = ref(false);
@@ -520,6 +521,14 @@ function closeModal(){
 function issueDebug(){
     console.log(editorData.value);
 }
+function handleEditorInit(editor){
+    
+    if(showOnlyComments.value){
+        editor.plugins.get('CommentsOnly').isEnabled = true;
+    }
+    
+   editorRef.value = editor;
+}
 async function refreshContentRecord(recordIdVal){
     try {
         let contentEndpoint = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/memorandumcontent__c/${recordIdVal}`;
@@ -560,6 +569,10 @@ watch(() => props.recordId, async (newValue)=>{
     sessionStorage.setItem('currentRecordId',newValue);
     refreshContentRecord(newValue);
 });
+watch(() => props.approvalRequestSubmitted,(newValue,oldValue)=>{
+    console.log('The Request Submitted property has changed: new Value: %s, old Value: %s',newValue,oldValue);
+    editorRef.value.plugins.get('CommentsOnly').isEnabled = newValue;
+})
 /**
  * Lifecycle methods
  */
@@ -647,7 +660,7 @@ onBeforeMount(()=>{
     </div>
     <!-- END : Header and Actions-->
 
-    <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" :disabled="showOnlyComments" />
+    <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit"/>
 </template>
 
 <style>
@@ -663,7 +676,7 @@ onBeforeMount(()=>{
         font-family: 'Poppins';
         font-size: 12pt;
         line-height: 18pt;
-        color: black;
+        color: #222;
         text-align: justify;
     }
     .ck.ck-content p {
@@ -683,7 +696,7 @@ onBeforeMount(()=>{
         font-family: 'Poppins';
         font-size: 12pt;
         line-height: 18pt;
-        color: #000;
+        color: #222;
     }
     .footer {
         font-family: 'Poppins';

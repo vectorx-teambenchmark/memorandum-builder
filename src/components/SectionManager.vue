@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import useAuthStore from '../stores/auth';
 import axios from 'axios';
 import ContentManager from './ContentManager.vue';
+import CommentList from './list/CommentList.vue';
 
 const props = defineProps({
     sectionId: {
@@ -24,12 +25,16 @@ const router = useRouter();
 const sectionInfo = ref({});
 const sectionName = ref('');
 const contentArray = ref([]);
+const commentArray = ref([]);
 const showEditSectionForm = ref(false);
 const currentSectionId = computed(()=>{
     return props.sectionId;
 });
 const allowEditing = computed(()=>{
     return ! props.restrictEditing;
+});
+const hasExternalComments = computed(()=>{
+    return commentArray.value.length > 0;
 })
 
 function handleCalloutException(e) {
@@ -169,13 +174,16 @@ async function updateSection(){
 async function obtainSectionInfo(){
     let urlendpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumSection__c/${currentSectionId.value}`;
     let contentQuery = encodeURIComponent(`SELECT Id, Name, Order__c, Parent__c, DisplayRecordName__c FROM MemorandumContent__c WHERE Parent__c ='${currentSectionId.value}' ORDER BY Order__c ASC`);
+    let commentQuery = encodeURIComponent(`SELECT Id, Text__c, CreatedDate FROM MemorandumSectionComment__c WHERE ParentSection__c = '${currentSectionId.value}'`);
     let queryEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${contentQuery}`;
+    let commentQueryEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${commentQuery}`;
+    let calloutHeaders = {'Authorization':`Bearer ${authStore.bearerToken}`}
     try {
         let response = await axios({
             method:'get',
             url:urlendpoint,
             responseType:'json',
-            headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
+            headers: calloutHeaders
         });
         sectionInfo.value = response.data;
         sectionName.value = sectionInfo.value.Name;
@@ -183,12 +191,19 @@ async function obtainSectionInfo(){
             method:'get',
             url:queryEndpoint,
             responseType:'json',
-            headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
+            headers:calloutHeaders
         });
+        let commentResponse = await axios({
+            method:'get',
+            url:commentQueryEndpoint,
+            responseType:'json',
+            headers:calloutHeaders
+        })
         let allSections = await obtainAllSections();
         sectionInfo.value.isFirst = (sectionInfo.value.Order__c === 1) ? true:false;
         sectionInfo.value.isLast = (sectionInfo.value.Order__c === allSections.length) ? true:false;
         contentArray.value = contentResponse.data.records.map(item => item);
+        commentArray.value = commentResponse.data.records.map(item => item);
     } catch(e) {
         handleCalloutException(e);
     }
@@ -227,6 +242,9 @@ onBeforeMount(async ()=>{
         </div>
         <div class="slds-card__body">
             <div class="slds-grid slds-wrap">
+                <div v-if="hasExternalComments" class="slds-co slds-size_1-of-1">
+                    <CommentList v-bind:comments="commentArray"></CommentList>
+                </div>
                 <div v-if="showEditSectionForm" class="slds-col slds-size_1-of-1 slds-theme_inverse slds-var-p-around_small">
                     <div class="slds-form-element">
                         <label class="slds-form-element__label" for="txtSectionName"><span class="slds-text-color_inverse">Section Name</span></label>
