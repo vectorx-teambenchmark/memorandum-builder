@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { reactive, ref, onBeforeMount, computed, watch } from 'vue';
+import { ref, onBeforeMount, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import { Autosave } from '@ckeditor/ckeditor5-autosave';
@@ -37,6 +37,7 @@ import { Template } from '@ckeditor/ckeditor5-template';
 import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
+import CommentList from './list/CommentList.vue';
 import useAuthStore from '../stores/auth';
 
 const props = defineProps({
@@ -163,6 +164,10 @@ const colorArray = computed(()=>{
         ];
 });
 const contentRecord = ref({});
+const commentArray = ref([]);
+const hasExternalComments = computed(()=>{
+    return commentArray.value.length > 0;
+});
 const recordApiUrl = computed(()=>{
     return `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`
 });
@@ -532,11 +537,20 @@ function handleEditorInit(editor){
 async function refreshContentRecord(recordIdVal){
     try {
         let contentEndpoint = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/memorandumcontent__c/${recordIdVal}`;
+        let commentQuery = encodeURIComponent(`SELECT Id, Text__c, CreatedDate FROM MemorandumExternalComment__c WHERE Parent__c = '${props.recordId}'`);
+        let commentQueryEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${commentQuery}`;
         let contentResponse = await axios.get(contentEndpoint,{
             responseType:'json',
             headers:{'authorization':`Bearer ${props.accessToken}`}
         });
+        let commentResponse = await axios({
+            method: 'get',
+            url: commentQueryEndpoint,
+            responseType: 'json',
+            headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
+        });
         contentRecord.value = contentResponse.data;
+        commentArray.value = commentResponse.data.records.map(item => item);
         editorData.value = (contentRecord.value?.Body__c === undefined || contentRecord.value?.Body__c === null) ? '':contentRecord.value.Body__c;
     } catch(e) {
         console.log('Error getting content: %s',JSON.stringify(e,null,"\t"))
@@ -661,6 +675,27 @@ onBeforeMount(()=>{
     <!-- END : Header and Actions-->
 
     <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit"/>
+
+    <div v-if="hasExternalComments" class="slds-card">
+        <div class="slds-card__header slds-grid">
+            <div class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__figure">
+
+                </div>
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span>Seller Comments</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-1">
+                <CommentList v-bind:comments="commentArray"></CommentList>
+            </div>
+        </div>
+    </div>
+
 </template>
 
 <style>
