@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { reactive, ref, onBeforeMount, computed, watch } from 'vue';
+import { ref, onBeforeMount, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import { Autosave } from '@ckeditor/ckeditor5-autosave';
@@ -37,6 +37,7 @@ import { Template } from '@ckeditor/ckeditor5-template';
 import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
 import { WordCount } from '@ckeditor/ckeditor5-word-count';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
+import CommentList from './list/CommentList.vue';
 import useAuthStore from '../stores/auth';
 
 const props = defineProps({
@@ -163,6 +164,10 @@ const colorArray = computed(()=>{
         ];
 });
 const contentRecord = ref({});
+const commentArray = ref([]);
+const hasExternalComments = computed(()=>{
+    return commentArray.value.length > 0;
+});
 const recordApiUrl = computed(()=>{
     return `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`
 });
@@ -380,12 +385,12 @@ const editorConfig = computed (()=>{ return {
                 {
                     title: 'Entity Registration (2 Column)',
                     description: 'Two column table at 50% width for Entity Registration Details',
-                    data: `<p>&nbsp;</p><figure class="table" style="width:70%;"><table style="background-color:rgb(242,242,242);border:2px solid rgb(162,147,133);"><tbody><tr><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:50%;" colspan="2"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>ENTITY REGISTRATION</strong></span></td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Legal Name</td><td style="padding:.15rem;text-align:center;width:50%;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">FEIN/EIN</td><td style="padding:.15rem;text-align:center;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Incorporation Date / Date Business Started</td><td style="padding:.15rem;text-align:center;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Company Structure</td><td style="padding:.15rem;text-align:center;">[STATE] [BUSINESS STRUCTURE]</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Tax Structure</td><td style="padding:.15rem;text-align:center;">TAX FORM NUMBER</td></tr></tbody></table></figure>`
+                    data: `<figure class="table" style="width:70%;"><table style="background-color:rgb(242,242,242);border:2px solid rgb(177,143,106);"><tbody><tr><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:50%;" colspan="2"><span style="color:hsl(0,0%,100%);font-size:20px;"><strong>ENTITY REGISTRATION</strong></span></td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Legal Name</td><td style="padding:.15rem;text-align:center;width:50%;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">FEIN/EIN</td><td style="padding:.15rem;text-align:center;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Incorporation Date / Date Business Started</td><td style="padding:.15rem;text-align:center;">FROM TAX RETURN</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Company Structure</td><td style="padding:.15rem;text-align:center;">[STATE] [BUSINESS STRUCTURE]</td></tr><tr><td style="border-right:2px solid rgb(162,147,133);padding:.15rem;width:50%;">Tax Structure</td><td style="padding:.15rem;text-align:center;">TAX FORM NUMBER</td></tr></tbody></table></figure>`
                 },
                 {
                     title: 'Entity Registration (4 Column)',
                     description: 'Four column, two row table set at a table width of 80% for Entity Registration Details',
-                    data:`<p>&nbsp;</p><figure class="table" style="width:80%;"><table style="background-color:rgb(242,242,242);"><tbody><tr><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>LEGAL NAME</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>FEI/EIN NUMBER</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>DATE ESTABLISHED</strong></span></td><td style="background-color:rgb(162,147,133);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>OWNER</strong></span></td></tr><tr><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td></tr></tbody></table></figure>`
+                    data:`<p>&nbsp;</p><figure class="table" style="width:80%;"><table style="background-color:rgb(242,242,242);"><tbody><tr><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>LEGAL NAME</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>FEI/EIN NUMBER</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>DATE ESTABLISHED</strong></span></td><td style="background-color:rgb(177,143,106);padding:.5rem;text-align:center;width:25%;"><span style="color:hsl(0,0%,100%);font-size:18px;"><strong>OWNER</strong></span></td></tr><tr><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td><td style="padding:.5rem;text-align:center;width:25%;">&nbsp;</td></tr></tbody></table></figure>`
                 },
                 {
                     title: 'Key Features & Opportunities',
@@ -532,11 +537,20 @@ function handleEditorInit(editor){
 async function refreshContentRecord(recordIdVal){
     try {
         let contentEndpoint = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/memorandumcontent__c/${recordIdVal}`;
+        let commentQuery = encodeURIComponent(`SELECT Id, Text__c, CreatedDate FROM MemorandumExternalComment__c WHERE Parent__c = '${props.recordId}'`);
+        let commentQueryEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${commentQuery}`;
         let contentResponse = await axios.get(contentEndpoint,{
             responseType:'json',
             headers:{'authorization':`Bearer ${props.accessToken}`}
         });
+        let commentResponse = await axios({
+            method: 'get',
+            url: commentQueryEndpoint,
+            responseType: 'json',
+            headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
+        });
         contentRecord.value = contentResponse.data;
+        commentArray.value = commentResponse.data.records.map(item => item);
         editorData.value = (contentRecord.value?.Body__c === undefined || contentRecord.value?.Body__c === null) ? '':contentRecord.value.Body__c;
     } catch(e) {
         console.log('Error getting content: %s',JSON.stringify(e,null,"\t"))
@@ -633,11 +647,9 @@ onBeforeMount(()=>{
                             <li>
                                 <button class="slds-button slds-button_brand" v-bind:disabled="approvalRequestSubmitted || isPublished" v-on:click="handleSave">Save</button>
                             </li>
-                            <!--
                             <li>
                                 <button class="slds-button slds-button_text-destructive" v-on:click="issueDebug">Debug</button>
                             </li>
-                            -->
                         </ul>
                     </div>
                 </div>
@@ -663,6 +675,27 @@ onBeforeMount(()=>{
     <!-- END : Header and Actions-->
 
     <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit"/>
+
+    <div v-if="hasExternalComments" class="slds-card slds-var-m-top_large">
+        <div class="slds-card__header slds-grid">
+            <div class="slds-media slds-media_center slds-has-flexi-truncate">
+                <div class="slds-media__figure">
+
+                </div>
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title">
+                        <span>Seller Comments</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_1-of-1">
+                <CommentList v-bind:comments="commentArray"></CommentList>
+            </div>
+        </div>
+    </div>
+
 </template>
 
 <style>
