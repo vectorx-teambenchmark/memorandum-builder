@@ -12,10 +12,12 @@ export class CommentsAdapter extends Plugin {
     static get requires() {
         return ['CommentsRepository'];
     }
-    
+    /** Commenting out the provideParentId Method - does not seem to be used anywhere */
+    /*
     provideParentId(params) {
         console.log('Provide Parent Id Called. Params: %s',JSON.stringify(params,null,"\t"));
     }
+    */
 
     /**
      * 
@@ -99,7 +101,7 @@ export class CommentsAdapter extends Plugin {
                 }
             },
             async removeComment(data){
-                let deleteCommentUrl = `${this.baseUri}/services/data/v59.0/sobjects/MemorandumContentComment__c/ExternalCommentIdd__c/${data.commentId}`;
+                let deleteCommentUrl = `${this.baseUri}/services/data/v59.0/sobjects/MemorandumContentComment__c/ExternalCommentId__c/${data.commentId}`;
                 try {
                     await axios.delete(deleteCommentUrl,{
                         headers:{'authorization':`Bearer ${this.accessToken}`}
@@ -159,6 +161,7 @@ export class CommentsAdapter extends Plugin {
                 return Promise.resolve(response.data);
             },
             updateCommentThread(data){
+                console.log('CommentsAdapter.updateCommentThread data passed in: %s',JSON.stringify(data,null,"\t"));
                 //not really implemented because it only seems to be used for real-time collaboration, so I will just
                 //return a void Promise.resolve statement.
                 return Promise.resolve();
@@ -218,7 +221,9 @@ export class CommentsAdapter extends Plugin {
             }
         };
         commentsRepositoryPlugin.on('addComment',(evt)=>{
+            console.log('addComment event fired');
             evt.source.adapter.currentRecordId = sessionStorage.getItem('currentRecordId');
+            console.log('currentRecordId passed in is: %s',evt.source.adapter.currentRecordId);
         },{ priority: 'high' });
     }
 }
