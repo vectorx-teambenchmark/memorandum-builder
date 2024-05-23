@@ -622,7 +622,7 @@ onBeforeMount(()=>{
                 <span class="slds-assistive-text">Cancel and close</span>
             </button>
             <div class="slds-modal__content slds-p-around_medium slds-modal__content_headless">
-                <h2 class="slds-text-heading_large">{{ modalText }} <span v-if="autoSavePending">Saving... Please do not navigate away.</span></h2>
+                <h2 class="slds-text-heading_large">{{ modalText }} <span v-if="autoSavePending"> Content Changed... Please do not navigate away until saving is complete.</span></h2>
             </div>
             <div class="slds-modal__footer">
                 <button class="slds-button slds-button_neutral" aria-label="Cancel and close">Close</button>
