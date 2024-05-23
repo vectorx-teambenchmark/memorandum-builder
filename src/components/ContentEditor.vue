@@ -242,7 +242,8 @@ const editorConfig = computed (()=>{ return {
         autosave: {
             save( editor ) {
                 handleAutoSave( editor.getData() );
-            }
+            },
+            waitingTime: 500
         },
         comments:{
             editorConfig: {
@@ -485,6 +486,7 @@ const contentName = computed(()=>{
 const editorRef = ref({});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
+const autoSavePending = ref(false);
 const displayRenameContentForm = ref(false);
 
 function handleCalloutException(e) {
@@ -531,6 +533,14 @@ function handleEditorInit(editor){
     if(showOnlyComments.value){
         editor.plugins.get('CommentsOnly').isEnabled = true;
     }
+    const pendingActions = editor.plugins.get('PendingActions');
+    pendingActions.on('change:hasAny',(evt, propertyName, newValue) => {
+        if(newValue) {
+            autoSavePending.value = true;
+        } else {
+            autoSavePending.value = false;
+        }
+    });
     
    editorRef.value = editor;
 }
@@ -586,6 +596,9 @@ watch(() => props.recordId, async (newValue)=>{
 watch(() => props.approvalRequestSubmitted,(newValue,oldValue)=>{
     console.log('The Request Submitted property has changed: new Value: %s, old Value: %s',newValue,oldValue);
     editorRef.value.plugins.get('CommentsOnly').isEnabled = newValue;
+});
+watch(()=> autoSavePending,(newValue,oldValue)=>{
+    console.log('The autoSavePending property changed from %s to %s',oldValue,newValue);
 })
 /**
  * Lifecycle methods
@@ -608,7 +621,7 @@ onBeforeMount(()=>{
                 <span class="slds-assistive-text">Cancel and close</span>
             </button>
             <div class="slds-modal__content slds-p-around_medium slds-modal__content_headless">
-                <h2 class="slds-text-heading_large">{{ modalText }}</h2>
+                <h2 class="slds-text-heading_large">{{ modalText }} <span v-if="autoSavePending">Saving... Please do not navigate away.</span></h2>
             </div>
             <div class="slds-modal__footer">
                 <button class="slds-button slds-button_neutral" aria-label="Cancel and close">Close</button>
