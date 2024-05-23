@@ -691,6 +691,7 @@ onBeforeMount(()=>{
 
     <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit"/>
 
+    <!-- BEGIN : Comment Information-->
     <div v-if="hasExternalComments" class="slds-card slds-var-m-top_large">
         <div class="slds-card__header slds-grid">
             <div class="slds-media slds-media_center slds-has-flexi-truncate">
@@ -710,7 +711,7 @@ onBeforeMount(()=>{
             </div>
         </div>
     </div>
-
+    <!-- END : Comment Information-->
 </template>
 
 <style>
