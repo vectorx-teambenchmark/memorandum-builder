@@ -243,7 +243,7 @@ const editorConfig = computed (()=>{ return {
             save( editor ) {
                 handleAutoSave( editor.getData() );
             },
-            waitingTime: 500
+            waitingTime: 2000
         },
         comments:{
             editorConfig: {
@@ -487,6 +487,7 @@ const editorRef = ref({});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
 const autoSavePending = ref(false);
+const displayPendingSave = computed(()=>{ return autoSavePending.value; });
 const displayRenameContentForm = ref(false);
 
 function handleCalloutException(e) {
@@ -597,7 +598,7 @@ watch(() => props.approvalRequestSubmitted,(newValue,oldValue)=>{
     console.log('The Request Submitted property has changed: new Value: %s, old Value: %s',newValue,oldValue);
     editorRef.value.plugins.get('CommentsOnly').isEnabled = newValue;
 });
-watch(()=> autoSavePending,(newValue,oldValue)=>{
+watch(()=> autoSavePending.value,(newValue,oldValue)=>{
     console.log('The autoSavePending property changed from %s to %s',oldValue,newValue);
 })
 /**
@@ -645,6 +646,7 @@ onBeforeMount(()=>{
                                 <h1>
                                     <span class="slds-page-header__title slds-truncate" v-bind:title="contentName">{{ contentName }}</span>
                                 </h1>
+                                <span v-if="displayPendingSave" class="slds-text-color_destructive slds-page-header__title">Saving - Please do not navigate away...</span>
                             </div>
                         </div>
                     </div>
