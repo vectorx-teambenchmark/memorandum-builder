@@ -41,6 +41,7 @@ const contents = computed(()=>{
 const tocData = ref([]);
 const selectedTocItem = ref('');
 const expandedTocItem = ref('');
+const expandedTocArray = ref([]);
 const showNewSectionForm = ref(false);
 const newSectionName = ref('');
 
@@ -57,7 +58,9 @@ function generateTocData(){
     let completeSections = [];
     if(Array.isArray(sections.value)){
         completeSections = sections.value.map(item => {
-            item.expanded = (item.Id === expandedTocItem.value) ? true: false;
+            //item.expanded = (item.Id === expandedTocItem.value) ? true: false;
+
+            item.expanded = (expandedTocArray.value.includes(item.Id)) ? true: false;
             item.selected = (item.Id === selectedTocItem.value) ? true : false;
             if(Object.hasOwn(groupedContents,item.Id)){
                 item.children = groupedContents[item.Id].map( item =>{
@@ -73,6 +76,18 @@ function generateTocData(){
         });
     }
     tocData.value = completeSections;
+}
+function handleExpandToggle(evt){
+    let targetId = evt.target.dataset.id;
+    let targetExpanded = evt.target.dataset.expanded === 'true';
+    let newExpandedArray = [];
+    if(targetExpanded === true){
+        newExpandedArray = expandedTocArray.value.filter(item => item !== targetId);
+    } else {
+        newExpandedArray = [...expandedTocArray.value,targetId];
+    }
+    expandedTocArray.value = newExpandedArray;
+
 }
 
 async function handleSectionCreate(){
@@ -98,7 +113,7 @@ async function handleSectionCreate(){
     }
 }
 
-watch([sections,contents,expandedTocItem],()=>{
+watch([sections,contents,expandedTocItem,expandedTocArray],()=>{
     generateTocData();
 });
 onBeforeMount(()=>{
@@ -116,7 +131,7 @@ onBeforeMount(()=>{
                     <div class="slds-tree__item">
                         <button v-bind:class="{'slds-button':true, 'slds-button_icon':true, 'slds-m-right_x-small':true, 'slds-hidden':!tocItem.hasChildren }" 
                             v-bind:aria-hidden="!tocItem.hasChildren" tabindex="-1" title="Expand Tree Branch" 
-                            v-on:click.self.stop="expandedTocItem = tocItem.Id">
+                            v-on:click.self.stop="handleExpandToggle" v-bind:data-id="tocItem.Id" v-bind:data-expanded="tocItem.expanded">
                             <svg class="slds-button__icon slds-button__icon_small" v-bind:aria-hidden="!tocItem.hasChildren">
                                 <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#chevronright"></use>
                             </svg>
