@@ -242,8 +242,7 @@ const editorConfig = computed (()=>{ return {
         autosave: {
             save( editor ) {
                 handleAutoSave( editor.getData() );
-            },
-            waitingTime: 2000
+            }
         },
         comments:{
             editorConfig: {
@@ -487,7 +486,7 @@ const editorRef = ref({});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
 const autoSavePending = ref(false);
-const displayPendingSave = computed(()=>{ return autoSavePending.value; });
+const displayPendingSave = computed(()=>{ return false; });
 const displayRenameContentForm = ref(false);
 
 function handleCalloutException(e) {
