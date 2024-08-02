@@ -57,6 +57,7 @@ function generateTocData(){
     }
     let completeSections = [];
     if(Array.isArray(sections.value)){
+        console.log(`Sections Value: ${JSON.stringify(sections.value,null,"\t")}`);
         completeSections = sections.value.map(item => {
             //item.expanded = (item.Id === expandedTocItem.value) ? true: false;
 
@@ -66,6 +67,9 @@ function generateTocData(){
                 item.children = groupedContents[item.Id].map( item =>{
                     let copiedItem = Object.assign({},item);
                     copiedItem.selected = (item.Id === selectedTocItem.value) ? true:false;
+                    let activeComments = isNaN(item.ActiveComments__c) ? 0 : item.ActiveComments__c;
+                    let externalComments = isNaN(item.ExternalComments__c) ? 0 : item.ExternalComments__c;
+                    copiedItem.commentCount = activeComments + externalComments;
                     return copiedItem;
                 });
                 item.hasChildren = true;
@@ -156,7 +160,7 @@ onBeforeMount(()=>{
                                 </button>
                                 <span class="slds-has-flexi-truncate">
                                     <span class="slds-tree__item-label slds-truncate" v-bind:title="tocChildItem.Name"
-                                        v-on:click.self.stop="emit('selection',tocChildItem.Id)">{{ tocChildItem.Name }} ({{ tocChildItem.ActiveComments__c }})</span>
+                                        v-on:click.self.stop="emit('selection',tocChildItem.Id)">{{ tocChildItem.Name }} ({{ tocChildItem.commentCount }})</span>
                                 </span>
                             </div>
                         </li>
