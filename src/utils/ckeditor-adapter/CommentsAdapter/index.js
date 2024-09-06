@@ -137,7 +137,9 @@ export class CommentsAdapter extends Plugin {
                 }
             },
             async getCommentThread(data){
+                console.log('Current Record ID used in getCommentThread %s',this.currentRecordId);
                 let commentQuery = encodeURIComponent(`SELECT Id, ExternalCommentId__c, ThreadId__c, Content__c, ResolvedOn__c, ResolvedById__c, CreatedById, CreatedDate FROM MemorandumContentComment__c WHERE ThreadId__c ='${data.threadId}' ORDER BY CreatedDate ASC`);
+                console.log('Comment Query: %s', decodeURIComponent(commentQuery));
                 let commentQueryUrl = `${this.baseUri}/services/data/v59.0/query?q=${commentQuery}`;
                 let response = await axios.get(commentQueryUrl,{
                     headers:{'authorization':`Bearer ${this.accessToken}`},

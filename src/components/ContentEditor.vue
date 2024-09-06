@@ -595,6 +595,8 @@ async function handleSaveInformation(){
  */
 watch(() => props.recordId, async (newValue)=>{
     console.log('The record Id has changed. %s',newValue);
+    editorRef.value.plugins.get('CommentsRepository').adapter.currentRecordId = newValue;
+    console.dir(editorRef.value.plugins.get('CommentsRepository').adapter);
     sessionStorage.setItem('currentRecordId',newValue);
     refreshContentRecord(newValue);
 });
