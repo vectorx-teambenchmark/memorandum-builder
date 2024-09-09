@@ -534,10 +534,20 @@ function issueDebug(){
     console.log(editorData.value);
 }
 function handleEditorInit(editor){
-    
+    //if the comments only value is enabled, then set the editor to the comments only mode.
     if(showOnlyComments.value){
         editor.plugins.get('CommentsOnly').isEnabled = true;
     }
+    //on the comments repository, if a thread is resolved, then fire an event
+    editor.plugins.get('CommentsRepository').on('resolveCommentThread',(evt,data)=>{
+        console.log('Thread Resolved: %s',JSON.stringify(data,null,"\t"));
+    });
+
+    //on the comments respositry, if a comment is added, then fire and event
+    editor.plugins.get('CommentsRepository').on('addComment',(evt,data)=>{
+        console.log('Comment Added: %s',JSON.stringify(data,null,"\t"));
+    });
+    //tie the pending actions event to a property accessible in the component
     const pendingActions = editor.plugins.get('PendingActions');
     pendingActions.on('change:hasAny',(evt, propertyName, newValue) => {
         if(newValue) {
