@@ -485,7 +485,7 @@ const editorConfig = computed (()=>{ return {
 });
 const editorData = ref('');
 const contentName = computed(()=>{
-    return (contentRecord.value?.Name !== undefined) ? contentRecord.value.Name:'';
+    return (contentRecord.value?.Name !== undefined && contentRecord.value?.Parent__r?.Name !== undefined) ? `${contentRecord.value.Parent__r.Name}: ${contentRecord.value.Name}`:'';
 });
 const editorRef = ref({});
 const modalText  = ref('Saving...');
@@ -552,6 +552,7 @@ function handleEditorInit(editor){
 async function refreshContentRecord(recordIdVal){
     try {
         let contentEndpoint = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/memorandumcontent__c/${recordIdVal}`;
+        contentEndpoint += `?fields=Id,Name,CurrencyIsoCode,Body__c,Parent__c,Parent__r.Name,Order__c,DisplayRecordName__c,ActiveComments__c,ExternalComments__c`
         let commentQuery = encodeURIComponent(`SELECT Id, Text__c, CreatedDate FROM MemorandumExternalComment__c WHERE Parent__c = '${props.recordId}'`);
         let commentQueryEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${commentQuery}`;
         let contentResponse = await axios.get(contentEndpoint,{
@@ -565,6 +566,7 @@ async function refreshContentRecord(recordIdVal){
             headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
         });
         contentRecord.value = contentResponse.data;
+        console.log('Content Record: %s',JSON.stringify(contentRecord.value,null,"\t"));
         commentArray.value = commentResponse.data.records.map(item => item);
         editorData.value = (contentRecord.value?.Body__c === undefined || contentRecord.value?.Body__c === null) ? '':contentRecord.value.Body__c;
     } catch(e) {

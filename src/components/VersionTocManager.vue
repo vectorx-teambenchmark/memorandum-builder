@@ -57,7 +57,7 @@ function generateTocData(){
     }
     let completeSections = [];
     if(Array.isArray(sections.value)){
-        console.log(`Sections Value: ${JSON.stringify(sections.value,null,"\t")}`);
+        //console.log(`Sections Value: ${JSON.stringify(sections.value,null,"\t")}`);
         completeSections = sections.value.map(item => {
             //item.expanded = (item.Id === expandedTocItem.value) ? true: false;
 
