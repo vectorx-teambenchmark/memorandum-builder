@@ -197,6 +197,9 @@ async function handleCloneVersion(versionIdIn){
     }
 }
 async function handleSubmitApprovalRequest() {
+    if(!window.confirm('Are you sure you want to submit this version for approval?')) {
+        return;
+    }
     //get the currentuser's Id
     let currentUserUri = new URL(authStore.idUrl);
     let currentUserId = currentUserUri.pathname.split('/').pop();
