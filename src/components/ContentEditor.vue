@@ -39,6 +39,7 @@ import { WordCount } from '@ckeditor/ckeditor5-word-count';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
 import CommentList from './list/CommentList.vue';
 import useAuthStore from '../stores/auth';
+import useProcessStatusStore from '../stores/processStatus';
 
 const props = defineProps({
    recordId: {
@@ -98,6 +99,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['contentupdated']);
 const authStore = useAuthStore();
+const processStatus = useProcessStatusStore();
 const router = useRouter();
 const colorArray = computed(()=>{
     return [
@@ -541,8 +543,10 @@ function handleEditorInit(editor){
     const pendingActions = editor.plugins.get('PendingActions');
     pendingActions.on('change:hasAny',(evt, propertyName, newValue) => {
         if(newValue) {
+            processStatus.setContentEditorBusy();
             autoSavePending.value = true;
         } else {
+            processStatus.setContentEditorReady();
             autoSavePending.value = false;
         }
     });
@@ -604,9 +608,11 @@ watch(() => props.approvalRequestSubmitted,(newValue,oldValue)=>{
     console.log('The Request Submitted property has changed: new Value: %s, old Value: %s',newValue,oldValue);
     editorRef.value.plugins.get('CommentsOnly').isEnabled = newValue;
 });
+/*
 watch(()=> autoSavePending.value,(newValue,oldValue)=>{
     console.log('The autoSavePending property changed from %s to %s',oldValue,newValue);
 })
+*/
 /**
  * Lifecycle methods
  */
