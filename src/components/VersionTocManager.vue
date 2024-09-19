@@ -2,6 +2,7 @@
 import { computed, ref, onBeforeMount, watch } from 'vue';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
+import useProcessStatusStore from '../stores/processStatus';
 
 const props = defineProps({
     sections: {
@@ -31,6 +32,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['selection','sectionadded']);
 const authStore = useAuthStore();
+const processStatusStore = useProcessStatusStore();
 const sections = computed(()=>{
     return props.sections;
 });
@@ -117,6 +119,15 @@ async function handleSectionCreate(){
     }
 }
 
+function postNavEvent(selectionId){
+    //first check if the event is able to be emitted
+    if(processStatusStore.isContentEditorBusy){
+        window.alert('The Content Editor is currently busy saving changes. Please wait a moment and try again.');
+        return;
+    }
+    emit('selection',selectionId);
+}
+
 watch([sections,contents,expandedTocItem,expandedTocArray],()=>{
     generateTocData();
 });
@@ -142,7 +153,7 @@ onBeforeMount(()=>{
                         </button>
                         <span class="slds-has-flexi-truncate">
                             <span class="slds-tree__item-label slds-truncate" v-bind:title="tocItem.Name"  
-                                v-on:click.self.stop="emit('selection',tocItem.Id)">{{ tocItem.Name }}</span>    
+                                v-on:click.self.stop="postNavEvent(tocItem.Id)">{{ tocItem.Name }}</span>    
                         </span>
                     </div>
                     <ul v-if="tocItem.hasChildren" v-bind:class="{'slds-hide':!tocItem.expanded,'slds-show':tocItem.expanded}" 
@@ -160,7 +171,7 @@ onBeforeMount(()=>{
                                 </button>
                                 <span class="slds-has-flexi-truncate">
                                     <span class="slds-tree__item-label slds-truncate" v-bind:title="tocChildItem.Name"
-                                        v-on:click.self.stop="emit('selection',tocChildItem.Id)">{{ tocChildItem.Name }} ({{ tocChildItem.commentCount }})</span>
+                                        v-on:click.self.stop="postNavEvent(tocChildItem.Id)">{{ tocChildItem.Name }} ({{ tocChildItem.commentCount }})</span>
                                 </span>
                             </div>
                         </li>
