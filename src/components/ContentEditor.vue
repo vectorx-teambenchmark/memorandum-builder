@@ -541,6 +541,7 @@ function handleEditorInit(editor){
         editor.plugins.get('CommentsOnly').isEnabled = true;
     }
     const pendingActions = editor.plugins.get('PendingActions');
+    const commentsActions = editor.plugins.get('CommentsRepository');
     pendingActions.on('change:hasAny',(evt, propertyName, newValue) => {
         if(newValue) {
             processStatus.setContentEditorBusy();
@@ -549,6 +550,26 @@ function handleEditorInit(editor){
             processStatus.setContentEditorReady();
             autoSavePending.value = false;
         }
+    });
+    commentsActions.on('addComment',(evt,data)=>{
+        setTimeout(()=>{
+            emit('contentupdated');
+        },1000);
+    });
+    commentsActions.on('deleteComment',(evt,data)=>{
+        setTimeout(()=>{
+            emit('contentupdated');
+        },1000);
+    });
+    commentsActions.on('resolveCommentThread',(evt,data)=>{
+        setTimeout(()=>{
+            emit('contentupdated');
+        },1000);
+    });
+    commentsActions.on('reopenCommentThread',(evt,data)=>{
+        setTimeout(()=>{
+            emit('contentupdated');
+        },1000);
     });
     
    editorRef.value = editor;
