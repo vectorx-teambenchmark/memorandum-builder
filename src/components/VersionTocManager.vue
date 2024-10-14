@@ -2,6 +2,7 @@
 import { computed, ref, onBeforeMount, watch } from 'vue';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
+import useProcessStatusStore from '../stores/processStatus';
 
 const props = defineProps({
     sections: {
@@ -31,6 +32,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['selection','sectionadded']);
 const authStore = useAuthStore();
+const processStatusStore = useProcessStatusStore();
 const sections = computed(()=>{
     return props.sections;
 });
@@ -57,10 +59,8 @@ function generateTocData(){
     }
     let completeSections = [];
     if(Array.isArray(sections.value)){
-        console.log(`Sections Value: ${JSON.stringify(sections.value,null,"\t")}`);
+        //console.log(`Sections Value: ${JSON.stringify(sections.value,null,"\t")}`);
         completeSections = sections.value.map(item => {
-            //item.expanded = (item.Id === expandedTocItem.value) ? true: false;
-
             item.expanded = (expandedTocArray.value.includes(item.Id)) ? true: false;
             item.selected = (item.Id === selectedTocItem.value) ? true : false;
             if(Object.hasOwn(groupedContents,item.Id)){
@@ -69,7 +69,7 @@ function generateTocData(){
                     copiedItem.selected = (item.Id === selectedTocItem.value) ? true:false;
                     let activeComments = isNaN(item.ActiveComments__c) ? 0 : item.ActiveComments__c;
                     let externalComments = isNaN(item.ExternalComments__c) ? 0 : item.ExternalComments__c;
-                    copiedItem.commentCount = activeComments + externalComments;
+                    copiedItem.commentCount = activeComments + externalComments;    
                     return copiedItem;
                 });
                 item.hasChildren = true;
@@ -117,6 +117,15 @@ async function handleSectionCreate(){
     }
 }
 
+function postNavEvent(selectionId){
+    //first check if the event is able to be emitted
+    if(processStatusStore.isContentEditorBusy){
+        window.alert('The Content Editor is currently busy saving changes. Please wait a moment and try again.');
+        return;
+    }
+    emit('selection',selectionId);
+}
+
 watch([sections,contents,expandedTocItem,expandedTocArray],()=>{
     generateTocData();
 });
@@ -142,7 +151,7 @@ onBeforeMount(()=>{
                         </button>
                         <span class="slds-has-flexi-truncate">
                             <span class="slds-tree__item-label slds-truncate" v-bind:title="tocItem.Name"  
-                                v-on:click.self.stop="emit('selection',tocItem.Id)">{{ tocItem.Name }}</span>    
+                                v-on:click.self.stop="postNavEvent(tocItem.Id)">{{ tocItem.Name }}</span>    
                         </span>
                     </div>
                     <ul v-if="tocItem.hasChildren" v-bind:class="{'slds-hide':!tocItem.expanded,'slds-show':tocItem.expanded}" 
@@ -160,7 +169,7 @@ onBeforeMount(()=>{
                                 </button>
                                 <span class="slds-has-flexi-truncate">
                                     <span class="slds-tree__item-label slds-truncate" v-bind:title="tocChildItem.Name"
-                                        v-on:click.self.stop="emit('selection',tocChildItem.Id)">{{ tocChildItem.Name }} ({{ tocChildItem.commentCount }})</span>
+                                        v-on:click.self.stop="postNavEvent(tocChildItem.Id)">{{ tocChildItem.Name }} ({{ tocChildItem.ExternalComments__c }}) <span class="slds-text-color_error">({{  tocChildItem.ActiveComments__c }})</span> <span class="slds-text-color_success">({{  tocChildItem.ResolvedComments__c }})</span> </span>
                                 </span>
                             </div>
                         </li>
