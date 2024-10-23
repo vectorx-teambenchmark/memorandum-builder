@@ -245,6 +245,7 @@ async function handleSubmitRecallRequest() {
 
 }
 async function obtainMemorandumVersionStatusPicklist(){
+    /*
     let endpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/describe`;
     try {
         let response = await axios({
@@ -260,6 +261,8 @@ async function obtainMemorandumVersionStatusPicklist(){
     } catch(e) {
         handleCalloutException(e);
     }
+        */
+    statusOptions.value = [{label:'Draft',value:'Draft'}];
 }
 async function handlePublishVersionRequest(){
     let versionData = {Status__c: 'Published'};
