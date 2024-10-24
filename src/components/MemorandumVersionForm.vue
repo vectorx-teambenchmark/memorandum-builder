@@ -47,6 +47,7 @@
     }
 
     onBeforeMount(async () => {
+        /*
         let endpoint = `${props.urlBase}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/describe`;
         try {
             let response = await axios({
@@ -62,6 +63,8 @@
         } catch(e) {
             console.log('Error: %s',JSON.stringify(e,null,"\t"));
         }
+        */
+       statusOptions.value = [{label:'Draft',value:'Draft'}];
     });
 </script>
 
