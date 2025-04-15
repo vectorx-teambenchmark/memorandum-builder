@@ -2,44 +2,24 @@
 import axios from 'axios';
 import { ref, onBeforeMount, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import CKEditor from '@ckeditor/ckeditor5-vue';
-import { Autosave } from '@ckeditor/ckeditor5-autosave';
-import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
-import { Comments } from '@ckeditor/ckeditor5-comments';
-import { Essentials } from '@ckeditor/ckeditor5-essentials';
-import { Alignment } from '@ckeditor/ckeditor5-alignment';
-import { Bold, Italic, Strikethrough, Subscript, Superscript, Underline } from '@ckeditor/ckeditor5-basic-styles';
-import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
-import { FindAndReplace } from '@ckeditor/ckeditor5-find-and-replace';
-import { FormatPainter } from '@ckeditor/ckeditor5-format-painter';
-import { GeneralHtmlSupport } from '@ckeditor/ckeditor5-html-support';
-import { DocumentList, DocumentListProperties } from '@ckeditor/ckeditor5-list';
-import { FontBackgroundColor, FontColor, FontFamily, FontSize } from '@ckeditor/ckeditor5-font';
-import { HorizontalLine } from '@ckeditor/ckeditor5-horizontal-line';
-import { HtmlEmbed } from '@ckeditor/ckeditor5-html-embed';
-import { Image, ImageCaption, ImageResize, ImageStyle, ImageToolbar, ImageUpload } from '@ckeditor/ckeditor5-image';
-import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
-import { Link, LinkImage } from '@ckeditor/ckeditor5-link';
-import { MediaEmbed, MediaEmbedToolbar } from '@ckeditor/ckeditor5-media-embed';
-import { Mention } from '@ckeditor/ckeditor5-mention';
-import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
-import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
-import { PasteFromOfficeEnhanced } from '@ckeditor/ckeditor5-paste-from-office-enhanced';
-import { RemoveFormat } from '@ckeditor/ckeditor5-remove-format';
-import { SelectAll } from '@ckeditor/ckeditor5-select-all';
-import { SlashCommand } from '@ckeditor/ckeditor5-slash-command';
-import { SourceEditing } from '@ckeditor/ckeditor5-source-editing';
-import { SpecialCharacters, SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials, 
-         SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText } from '@ckeditor/ckeditor5-special-characters';
-import { Style } from '@ckeditor/ckeditor5-style';
-import { Table, TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar } from '@ckeditor/ckeditor5-table';
-import { Template } from '@ckeditor/ckeditor5-template';
-import { SimpleUploadAdapter } from '@ckeditor/ckeditor5-upload';
-import { WordCount } from '@ckeditor/ckeditor5-word-count';
+import { Ckeditor } from '@ckeditor/ckeditor5-vue';
+//updated imports for ckeditor 5 since version 45
+import { Autosave, ClassicEditor, Essentials, Alignment, Bold, Italic, Strikethrough, Subscript, Superscript, Underline, 
+    BlockQuote, FindAndReplace, GeneralHtmlSupport, List, ListProperties, FontBackgroundColor, FontColor, FontFamily, 
+    FontSize, HorizontalLine, HtmlEmbed, Image, ImageCaption, ImageResize, ImageStyle, ImageToolbar, ImageUpload,
+    Indent, IndentBlock, Link, LinkImage, MediaEmbed, MediaEmbedToolbar, Mention, Paragraph, PasteFromOffice, RemoveFormat, SelectAll,
+    SourceEditing, SpecialCharacters, SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials,
+    SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Style, Table, TableCaption, TableCellProperties,
+    TableColumnResize, TableProperties, TableToolbar, Template, SimpleUploadAdapter, WordCount
+} from 'ckeditor5';
+import { Comments, FormatPainter, PasteFromOfficeEnhanced, SlashCommand } from 'ckeditor5-premium-features';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
 import CommentList from './list/CommentList.vue';
 import useAuthStore from '../stores/auth';
 import useProcessStatusStore from '../stores/processStatus';
+
+import 'ckeditor5/ckeditor5.css';
+import 'ckeditor5-premium-features/ckeditor5-premium-features.css';
 
 const props = defineProps({
    recordId: {
@@ -176,7 +156,6 @@ const recordApiUrl = computed(()=>{
 const showOnlyComments = computed(()=>{
     return props.approvalRequestSubmitted || props.isPublished;
 });
-const ckeditor = CKEditor.component;
 const editorInstance = ClassicEditor;
 const editorConfig = computed (()=>{ return {
         plugins: [
@@ -185,8 +164,8 @@ const editorConfig = computed (()=>{ return {
             BlockQuote,
             Bold,
             Comments,
-            DocumentList,
-            DocumentListProperties,
+            List,
+            ListProperties,
             Essentials,
             FindAndReplace,
             FontBackgroundColor, 
@@ -248,7 +227,7 @@ const editorConfig = computed (()=>{ return {
         },
         comments:{
             editorConfig: {
-                extraPlugins: [ Bold, Italic, DocumentList ]
+                extraPlugins: [ Bold, Italic, List ]
             }
         },
         fontBackgroundColor: {

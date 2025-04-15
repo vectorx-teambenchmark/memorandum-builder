@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Plugin } from '@ckeditor/ckeditor5-core';
+import { Plugin } from 'ckeditor5';
 
 export class CommentsAdapter extends Plugin {
     constructor(editor) {
