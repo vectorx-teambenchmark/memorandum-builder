@@ -286,6 +286,16 @@ const editorConfig = computed (()=>{ return {
         },
         mediaEmbed: {
             previewsInData: true,
+            removeProviders:['vimeo'],
+            extraProviders:[
+                {
+                    name: 'securevimeo',
+                    url: /^(https?:\/\/)?player\.vimeo\.com\/.*\/([0-9]+\?h=.*)$/,
+                    html: match => `<div style="position: relative; padding-bottom: 50%; height: 0;">
+                        <iframe src="https://player.vimeo.com/video/${match[2]}" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;" frameborder="0" allowfullscreen></iframe>
+                        </div>`
+                }  
+            ],
             toolbar:[
             {
                     // Grouping the buttons for the icon-like image styling
