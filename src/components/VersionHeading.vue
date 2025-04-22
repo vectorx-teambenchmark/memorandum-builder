@@ -40,6 +40,7 @@ const showPreviewManager = ref(false);
 const showErrMess = ref(false);
 const errMess = ref('');
 const communityBase = ref('');
+const corpEntityCountry = ref('');
 
 const newVersionCanonicalVersion = ref(0);
 const newVersionStatus = ref('');
@@ -97,6 +98,16 @@ function redirectToPreview(){
     let redirectUrl = `${previewStartUrl}`;
     window.open(redirectUrl,'_blank');
 }
+function redirectToPDFPreview(){
+    let baseUrl = `https://cimpdf.benchmarkintl.com/${versionId.value}`;
+    if(corpEntityCountry.value !== 'United States'){
+        baseUrl += '/a4';
+    }
+    //REMOVE FOR PRODUCTION
+    //baseUrl += '/sandbox';
+    let redirectUrl = `${baseUrl}`;
+    window.open(redirectUrl,'_blank');
+}
 function versionSelectionNavigation(){
     router.push({name:'versionselect',params:{recordId:parentMarketingMaterialId.value}});
 }
@@ -142,6 +153,7 @@ async function determineDefaultApproverId(versionIdIn){
         let approverResponse = await axios.get(approverUrl,{headers:{'authorization':`Bearer ${authStore.bearerToken}`},responseType:'json'});
         let approverResponseId = approverResponse.data.records[0]?.ParentMarketingMaterial__r?.Opportunity__r?.Transaction_Director__c;
         let cmmEntityCountry = approverResponse.data.records[0]?.ParentMarketingMaterial__r?.Opportunity__r?.Benchmark_Entity__r?.Country__c;
+        corpEntityCountry.value = cmmEntityCountry;
         if(cmmEntityCountry === 'United States'){
             let groupQuery = encodeURIComponent(`SELECT Id, Name FROM Group WHERE DeveloperName = 'QC_CMM_Pending_Approvals'`);
             let groupQueryUrl = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${groupQuery}`;
@@ -156,6 +168,9 @@ async function determineDefaultApproverId(versionIdIn){
         handleCalloutException(e);
     }
 }
+
+
+
 async function handleCloneVersion(versionIdIn){
     showErrMess.value = false;
     errMess.value = '';
@@ -293,6 +308,7 @@ onBeforeMount(async () => {
     determineDefaultApproverId(versionId.value);
     obtainMemorandumVersionInfo(versionId.value);
     obtainMemorandumVersionStatusPicklist();
+    //genratePdfPreviewUrl(versionId.value);
 });
 </script>
 
@@ -351,6 +367,9 @@ onBeforeMount(async () => {
                             </li>
                             <li>
                                 <button class="slds-button slds-button_neutral" v-on:click="redirectToPreview">Preview Version</button>
+                            </li>
+                            <li>
+                                <button class="slds-button slds-button_neutral" v-on:click="redirectToPDFPreview">Preview PDF Version</button>
                             </li>
                             <li>
                                 <button class="slds-button slds-button_neutral" v-on:click="showPreviewManager = !showPreviewManager" v-bind:disabled="isPublished">Get Preview URL</button>
