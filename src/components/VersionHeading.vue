@@ -104,7 +104,7 @@ function redirectToPDFPreview(){
         baseUrl += '/a4';
     }
     //REMOVE FOR PRODUCTION
-    baseUrl += '/sandbox';
+    //baseUrl += '/sandbox';
     let redirectUrl = `${baseUrl}`;
     window.open(redirectUrl,'_blank');
 }
