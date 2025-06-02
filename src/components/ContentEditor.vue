@@ -10,9 +10,9 @@ import { Autosave, ClassicEditor, Essentials, Alignment, Bold, Italic, Strikethr
     Indent, IndentBlock, Link, LinkImage, MediaEmbed, MediaEmbedToolbar, Mention, Paragraph, PasteFromOffice, RemoveFormat, SelectAll,
     SourceEditing, SpecialCharacters, SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials,
     SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Style, Table, TableCaption, TableCellProperties,
-    TableColumnResize, TableProperties, TableToolbar, Template, SimpleUploadAdapter, WordCount
+    TableColumnResize, TableProperties, TableToolbar, SimpleUploadAdapter, WordCount
 } from 'ckeditor5';
-import { Comments, FormatPainter, PasteFromOfficeEnhanced, SlashCommand } from 'ckeditor5-premium-features';
+import { Comments, FormatPainter, PasteFromOfficeEnhanced, SlashCommand, Template } from 'ckeditor5-premium-features';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
 import CommentList from './list/CommentList.vue';
 import useAuthStore from '../stores/auth';
