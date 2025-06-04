@@ -178,11 +178,11 @@ onBeforeMount(() => {
         <div v-if="requestSubmitted" class="slds-col slds-size_1-of-1 slds-var-p-around_small ">
             <VersionProcessManager v-bind:version-id="recordId" v-on:approval-process-status-change="handleVersionDataChange"/>
         </div>
-        <div v-if="versionDisplayToc" class="slds-col slds-size_1-of-5 slds-var-p-around_small">
+        <div v-if="versionDisplayToc" class="slds-col slds-size_1-of-4 slds-var-p-around_small">
             <VersionTocManager v-bind:version-id="recordId" v-bind:sections="versionSections" v-bind:contents="versionContents" 
                 v-bind:in-approval="requestSubmitted" v-on:selection="handleRecordSelection" v-on:sectionadded="refreshVersionSections"/>
         </div>
-        <div v-bind:class="{'slds-col':true, 'slds-size_1-of-1':!versionDisplayToc,'slds-size_4-of-5':versionDisplayToc,'slds-var-p-around_small':true}">
+        <div v-bind:class="{'slds-col':true, 'slds-size_1-of-1':!versionDisplayToc,'slds-size_3-of-4':versionDisplayToc,'slds-var-p-around_small':true}">
             <SectionManager v-if="isSectionSelected" v-bind:section-id="selectedRecord.Id" v-on:sectionupdate="refreshVersionSections" 
                 v-bind:restrict-editing="requestSubmitted || isPublished" v-on:sectiondelete="refreshVersionSections" v-on:contentselection="handleRecordSelection" 
                 v-on:contentupdate="refreshVersionContents"/>
