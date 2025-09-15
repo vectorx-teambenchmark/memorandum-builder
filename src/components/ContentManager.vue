@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeMount, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import useAuthStore from '../stores/auth';
 import Toggle from './Toggle.vue';
@@ -22,16 +22,22 @@ const props = defineProps({
 const emit = defineEmits(['contentselection','contentupdate']);
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 const currentSectionId = computed(()=>{
     return props.sectionId;
 });
 const allowEditing = computed(()=>{
     return !props.restrictEditing;
-})
+});
+const versionId = computed(() => {
+    return route.params?.recordId;
+});
 const contentArray = ref([]);
 const showNewContentForm = ref(false);
 const newContentDisplayName = ref(false);
+const showContentCloneForm = ref(false);
 const newContentName = ref('');
+const selectedCloneContentId = ref('');
 
 function handleCalloutException(e) {
     switch(e.response.status) {
@@ -177,6 +183,10 @@ async function handleCreateNewContent(){
         handleCalloutException(e);
     }
 }
+function handleShowCloneContentForm(selectedContentId){
+    selectedCloneContentId.value = selectedContentId;
+    showContentCloneForm.value = true;
+}
 
 watch(currentSectionId,async ()=>{
     await obtainContentInfo();
@@ -202,6 +212,7 @@ onBeforeMount(async ()=>{
             <div class="slds-col sls-size_1-of-3 slds-text-align_right">
                 <div v-if="allowEditing" class="slds-button-group">
                     <button class="slds-button slds-button_brand" v-on:click="emit('contentselection',contentItem.Id)">Edit Content</button>
+                    <button class="slds-button slds-button_brand" v-on:click="handleShowCloneContentForm(contentItem.Id)">Clone Content</button>
                     <button class="slds-button slds-button_neutral" v-bind:disabled="contentItem.isFirst" v-on:click="handleMoveContentUp(contentItem.Id)">Move Content Up</button>
                     <button class="slds-button slds-button_neutral" v-bind:disabled="contentItem.isLast" v-on:click="handleMoveContentDown(contentItem.Id)">Move Content Down</button>
                     <button class="slds-button slds-button_destructive" v-on:click="handleDeleteContent(contentItem.Id)">Delete Content</button>
@@ -243,4 +254,22 @@ onBeforeMount(async ()=>{
             </div>
         </div>
     </div>
+    <section v-if="showContentCloneForm">
+    <div role="dialog" aria-modal="true" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <div class="slds-modal__header">
+                <h1 class="slds-modal__title slds-hyphenate">Content Clone</h1>
+            </div>
+            <div class="slds-modal__content slds-p-around_medium">
+                <!-- Content here -->
+                
+            </div>
+            <div class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" v-on:click="showContentCloneForm = false">Cancel</button>
+                <button class="slds-button slds-button_brand">Clone</button>
+            </div>
+        </div>
+    </div>
+    <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </section>
 </template>
