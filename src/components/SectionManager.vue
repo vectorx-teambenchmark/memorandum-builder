@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import useAuthStore from '../stores/auth';
 import axios from 'axios';
 import ContentManager from './ContentManager.vue';
-import CommentList from './list/CommentList.vue';
 
 const props = defineProps({
     sectionId: {
@@ -24,9 +23,12 @@ const authStore = useAuthStore();
 const router = useRouter();
 const sectionInfo = ref({});
 const sectionName = ref('');
+const clonedSectionName = ref('');
 const contentArray = ref([]);
 
 const showEditSectionForm = ref(false);
+const showCloneSectionForm = ref(false);
+const disableSectionCloneCommand = ref(false);
 const currentSectionId = computed(()=>{
     return props.sectionId;
 });
@@ -82,6 +84,48 @@ function moveSectionUp(sectionItem,sectionArray){
     });
     return sectionArray;
 }
+async function cloneSection() {
+    try {
+        disableSectionCloneCommand.value = true;
+        let sectionRecords = await obtainAllSections();
+        let recordInfo = {
+            'Name':clonedSectionName.value,
+            'Parent__c':sectionInfo.value.Parent__c,
+            'Order__c':sectionRecords.length + 1
+        };
+        let endpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumSection__c/`;
+        let sectionResponse = await axios({ 
+            method:'post',
+            url:endpoint,
+            data:recordInfo,
+            headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
+        });
+        let newSectionId = sectionResponse.data.id;
+        //now clone the content items
+        for(let contentItem of contentArray.value) {
+            let contentRecord = {
+                'Name':contentItem.Name,
+                'Body__c':contentItem.Body__c,
+                'DisplayRecordName__c':contentItem.DisplayRecordName__c,
+                'Order__c':contentItem.Order__c,
+                'Parent__c':newSectionId
+            };
+            let contentEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/`;
+            await axios({
+                method:'post',
+                url:contentEndpoint,
+                data:contentRecord,
+                headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
+            });
+        }
+        disableSectionCloneCommand.value = false;
+        showCloneSectionForm.value = false;
+        emit('contentupdate');
+        emit('sectionupdate');
+    } catch(e) {
+        handleCalloutException(e);
+    }
+}
 async function handleMoveSectionDown(){
     try {
         let sectionRecords = await obtainAllSections();
@@ -121,7 +165,7 @@ async function handleMoveSectionUp(){
     emit('sectionupdate');
 }
 async function obtainAllSections(){
-    let sectionQuery = encodeURIComponent(`SELECT Id, Name, Order__c FROM MemorandumSection__c WHERE Parent__c = '${sectionInfo.value.Parent__c}' ORDER BY Order__c ASC`);
+    let sectionQuery = encodeURIComponent(`SELECT Id, Name, Order__c, Parent__c FROM MemorandumSection__c WHERE Parent__c = '${sectionInfo.value.Parent__c}' ORDER BY Order__c ASC`);
     let sectionQueryEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${sectionQuery}`;
     try {
         let sectionQueryResponse = await axios({
@@ -171,7 +215,7 @@ async function updateSection(){
 }
 async function obtainSectionInfo(){
     let urlendpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumSection__c/${currentSectionId.value}`;
-    let contentQuery = encodeURIComponent(`SELECT Id, Name, Order__c, Parent__c, DisplayRecordName__c FROM MemorandumContent__c WHERE Parent__c ='${currentSectionId.value}' ORDER BY Order__c ASC`);
+    let contentQuery = encodeURIComponent(`SELECT Id, Name, Order__c, Parent__c, DisplayRecordName__c, Body__c FROM MemorandumContent__c WHERE Parent__c ='${currentSectionId.value}' ORDER BY Order__c ASC`);
     let queryEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${contentQuery}`;   
     let calloutHeaders = {'Authorization':`Bearer ${authStore.bearerToken}`}
     try {
@@ -189,6 +233,7 @@ async function obtainSectionInfo(){
             responseType:'json',
             headers:calloutHeaders
         });
+        clonedSectionName.value = `Copy of ${sectionInfo.value.Name}`;
         
         let allSections = await obtainAllSections();
         sectionInfo.value.isFirst = (sectionInfo.value.Order__c === 1) ? true:false;
@@ -224,6 +269,7 @@ onBeforeMount(async ()=>{
                 <div class="slds-no-flex">
                     <div v-if="allowEditing" class="slds-button-group">
                         <button class="slds-button slds-button_brand" v-on:click="showEditSectionForm = !showEditSectionForm">{{ (showEditSectionForm) ? 'Cancel Rename':'Rename Section'}}</button>
+                        <button class="slds-button slds-button_brand" v-on:click="showCloneSectionForm = !showCloneSectionForm">Clone Section</button>
                         <button class="slds-button slds-button_neutral" v-on:click="handleMoveSectionUp" v-bind:disabled="sectionInfo.isFirst">Move Section Up</button>
                         <button class="slds-button slds-button_neutral" v-on:click="handleMoveSectionDown" v-bind:disabled="sectionInfo.isLast">Move Section Down</button>
                         <button class="slds-button slds-button_destructive" v-on:click="deleteSection">Delete Section</button>
@@ -251,4 +297,27 @@ onBeforeMount(async ()=>{
             </div>
         </div>
     </article>
+    <section v-if="showCloneSectionForm">
+        <div role="dialog" aria-modal="true" aria-labelledby="modal-heading-01" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <div class="slds-modal__header">
+                    <h1 class="slds-modal__title slds-hyphenate">Clone Section</h1>
+                </div>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p>Cloning a section will create a duplicate of this section along with all of its content items. You can then rename the section and modify the content as needed.</p>
+                    <div class="slds-form-element slds-m-top_medium">
+                        <label class="slds-form-element__label" for="txtCloneSectionName">New Section Name</label>
+                        <div class="slds-form-element__control">
+                            <input type="text" id="txtCloneSectionName" class="slds-input" v-model="clonedSectionName"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-modal__footer slds-grid slds-grid_align-end">
+                    <button class="slds-button slds-button_neutral" v-on:click="showCloneSectionForm = false">Cancel</button>
+                    <button class="slds-button slds-button_brand" v-on:click="cloneSection" :disabled="disableSectionCloneCommand">Clone Section</button>
+                </div>
+            </div>
+        </div>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </section>
 </template>
