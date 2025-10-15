@@ -68,3 +68,7 @@
   font-weight: normal;
   font-style: normal;
 }
+
+.modal-long {
+  height: 40vh;
+}

@@ -64,7 +64,18 @@ function generateTocData(){
             item.expanded = (expandedTocArray.value.includes(item.Id)) ? true: false;
             item.selected = (item.Id === selectedTocItem.value) ? true : false;
             if(Object.hasOwn(groupedContents,item.Id)){
-                item.children = groupedContents[item.Id].map( item =>{
+                const commentTotals = groupedContents[item.Id].reduce((totals, child) => {
+                    totals.active += isNaN(child.ActiveComments__c) ? 0 : Number(child.ActiveComments__c);
+                    totals.resolved += isNaN(child.ResolvedComments__c) ? 0 : Number(child.ResolvedComments__c);
+                    totals.external += isNaN(child.ExternalComments__c) ? 0 : Number(child.ExternalComments__c);
+                    return totals;
+                }, { active: 0, resolved: 0, external: 0 });
+
+                item.totalActiveComments = commentTotals.active;
+                item.totalResolvedComments = commentTotals.resolved;
+                item.totalExternalComments = commentTotals.external;
+
+                item.children = groupedContents[item.Id].map( item =>{ 
                     let copiedItem = Object.assign({},item);
                     copiedItem.selected = (item.Id === selectedTocItem.value) ? true:false;
                     let activeComments = isNaN(item.ActiveComments__c) ? 0 : item.ActiveComments__c;
@@ -75,6 +86,9 @@ function generateTocData(){
                 item.hasChildren = true;
             } else {
                 item.hasChildren = false;
+                item.totalActiveComments = 0;
+                item.totalResolvedComments = 0;
+                item.totalExternalComments = 0;
             }
             return item;
         });
@@ -151,7 +165,7 @@ onBeforeMount(()=>{
                         </button>
                         <span class="slds-has-flexi-truncate">
                             <span class="slds-tree__item-label slds-truncate" v-bind:title="tocItem.Name"  
-                                v-on:click.self.stop="postNavEvent(tocItem.Id)">{{ tocItem.Name }}</span>    
+                                v-on:click.self.stop="postNavEvent(tocItem.Id)">{{ tocItem.Name }} ({{ tocItem.totalExternalComments }}) <span class="slds-text-color_error">({{  tocItem.totalActiveComments }})</span> <span class="slds-text-color_success">({{  tocItem.totalResolvedComments }})</span></span>
                         </span>
                     </div>
                     <ul v-if="tocItem.hasChildren" v-bind:class="{'slds-hide':!tocItem.expanded,'slds-show':tocItem.expanded}" 
