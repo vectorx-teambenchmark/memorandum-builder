@@ -40,7 +40,7 @@ const contents = computed(()=>{
     return props.contents;
 });
 
-const tocData = ref([]);
+const tocData = ref({});
 const selectedTocItem = ref('');
 const expandedTocItem = ref('');
 const expandedTocArray = ref([]);
@@ -58,8 +58,13 @@ function generateTocData(){
         },{});
     }
     let completeSections = [];
+    const grandTotals = {
+        active: 0,
+        resolved: 0,
+        external: 0
+    };
+
     if(Array.isArray(sections.value)){
-        //console.log(`Sections Value: ${JSON.stringify(sections.value,null,"\t")}`);
         completeSections = sections.value.map(item => {
             item.expanded = (expandedTocArray.value.includes(item.Id)) ? true: false;
             item.selected = (item.Id === selectedTocItem.value) ? true : false;
@@ -71,6 +76,10 @@ function generateTocData(){
                     return totals;
                 }, { active: 0, resolved: 0, external: 0 });
 
+                grandTotals.active += commentTotals.active;
+                grandTotals.resolved += commentTotals.resolved;
+                grandTotals.external += commentTotals.external;
+
                 item.totalActiveComments = commentTotals.active;
                 item.totalResolvedComments = commentTotals.resolved;
                 item.totalExternalComments = commentTotals.external;
@@ -80,7 +89,7 @@ function generateTocData(){
                     copiedItem.selected = (item.Id === selectedTocItem.value) ? true:false;
                     let activeComments = isNaN(item.ActiveComments__c) ? 0 : item.ActiveComments__c;
                     let externalComments = isNaN(item.ExternalComments__c) ? 0 : item.ExternalComments__c;
-                    copiedItem.commentCount = activeComments + externalComments;    
+                    copiedItem.commentCount = activeComments + externalComments;
                     return copiedItem;
                 });
                 item.hasChildren = true;
@@ -93,7 +102,11 @@ function generateTocData(){
             return item;
         });
     }
-    tocData.value = completeSections;
+
+    tocData.value = {
+        items: completeSections,
+        totals: grandTotals
+    };
 }
 function handleExpandToggle(evt){
     let targetId = evt.target.dataset.id;
@@ -151,9 +164,9 @@ onBeforeMount(()=>{
 <template>
     <div class="slds-box slds-theme_default">
         <div clas="slds-tree_container">
-            <h4 class="slds-tree__group-header" id="treeheading">Table Of Contents</h4>
+            <h4 class="slds-tree__group-header" id="treeheading">Table Of Contents ({{ tocData.totals.external }}) <span class="slds-text-color_error">({{  tocData.totals.active }})</span> <span class="slds-text-color_success">({{  tocData.totals.resolved }})</span></h4>
             <ul aria-labelledby="treeheading" clas="slds-tree" role="tree">
-                <li v-for="tocItem in tocData" v-bind:key="tocItem.Id" aria-level="1" v-bind:aria-selected="tocItem.selected" 
+                <li v-for="tocItem in tocData.items" v-bind:key="tocItem.Id" aria-level="1" v-bind:aria-selected="tocItem.selected" 
                     v-bind:aria-expanded="tocItem.expanded" role="treeitem">
                     <div class="slds-tree__item">
                         <button v-bind:class="{'slds-button':true, 'slds-button_icon':true, 'slds-m-right_x-small':true, 'slds-hidden':!tocItem.hasChildren }" 
