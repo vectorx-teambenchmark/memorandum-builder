@@ -64,6 +64,7 @@ function moveSectionDown(sectionItem,sectionArray){
     var order = 1;
     sectionArray.forEach(curItem =>{
         curItem.Order__c = order;
+        delete curItem['Parent__c'];
         order++;
     });
     return sectionArray;
@@ -80,6 +81,7 @@ function moveSectionUp(sectionItem,sectionArray){
     var order = 1;
     sectionArray.forEach(curItem =>{
         curItem.Order__c = order;
+        delete curItem['Parent__c'];
         order++;
     });
     return sectionArray;

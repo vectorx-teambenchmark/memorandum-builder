@@ -257,7 +257,6 @@ async function obtainVersionSections() {
             let {Id, Name} = item;
             return {'label':Name, 'value':Id };
         });
-        console.log(`Section Array: ${JSON.stringify(sectionArray.value,null,"\t")}`);
     } catch(e) {
         handleCalloutException(e);
     }
