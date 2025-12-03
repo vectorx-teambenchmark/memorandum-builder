@@ -12,7 +12,7 @@ import { Autosave, ClassicEditor, Essentials, Alignment, Bold, Italic, Strikethr
     SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Style, Table, TableCaption, TableCellProperties,
     TableColumnResize, TableProperties, TableToolbar, SimpleUploadAdapter, WordCount
 } from 'ckeditor5';
-import { Comments, FormatPainter, PasteFromOfficeEnhanced, SlashCommand, Template } from 'ckeditor5-premium-features';
+import { Comments, FormatPainter, PasteFromOfficeEnhanced, SlashCommand, Template, RevisionHistory } from 'ckeditor5-premium-features';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
 import CommentList from './list/CommentList.vue';
 import useAuthStore from '../stores/auth';
@@ -194,6 +194,7 @@ const editorConfig = computed (()=>{ return {
             PasteFromOffice,
             PasteFromOfficeEnhanced,
             RemoveFormat,
+            RevisionHistory,
             SelectAll,
             SimpleUploadAdapter,
             SlashCommand,
@@ -469,7 +470,7 @@ const editorConfig = computed (()=>{ return {
             'alignment','bold','italic','underline','strikethrough','subscript','superscript','removeFormat','formatPainter','|',
             'fontBackgroundColor','fontColor','fontSize','fontFamily','|','link','bulletedList','numberedList','selectAll','|',
             'horizontalLine','outdent','indent','|','imageUpload','blockQuote','insertTable','mediaEmbed','insertTemplate',
-            'specialCharacters','undo','redo','findAndReplace','|','comment','commentsArchive'
+            'specialCharacters','undo','redo','findAndReplace','|','comment','commentsArchive','|','revisionHistory'
         ],
         licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE,
     };
