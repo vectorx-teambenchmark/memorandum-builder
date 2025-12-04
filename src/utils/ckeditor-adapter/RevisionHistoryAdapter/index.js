@@ -1,14 +1,14 @@
 import axios from "axios";
 import { Plugin } from "ckeditor5";
 
-export class RevsionHistoryAdapter extends Plugin {
+export class RevisionHistoryAdapter extends Plugin {
     constructor(editor) {
         super();
         this.editor = editor;
     }
 
     static get pluginName() {
-        return "RevsionHistoryAdapter";
+        return "RevisionHistoryAdapter";
     }
 
     static get requires() {
@@ -39,9 +39,10 @@ export class RevsionHistoryAdapter extends Plugin {
     }
 
     async _findRevision(revisionId) {
-        
+        console.log('Fetching revision with ID:', revisionId);
+        return Promise.resolve(null);
     }
     async _fetchReivisionsData() {
-
+        return Promise.reject('There is no data available');
     }
 }

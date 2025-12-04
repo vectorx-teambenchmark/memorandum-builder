@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { ref, onBeforeMount, computed, watch } from 'vue';
+import { ref, onBeforeMount, computed, watch, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { Ckeditor } from '@ckeditor/ckeditor5-vue';
 //updated imports for ckeditor 5 since version 45
@@ -14,6 +14,7 @@ import { Autosave, ClassicEditor, Essentials, Alignment, Bold, Italic, Strikethr
 } from 'ckeditor5';
 import { Comments, FormatPainter, PasteFromOfficeEnhanced, SlashCommand, Template, RevisionHistory } from 'ckeditor5-premium-features';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
+import { RevisionHistoryAdapter } from '../utils/ckeditor-adapter/RevisionHistoryAdapter';
 import CommentList from './list/CommentList.vue';
 import useAuthStore from '../stores/auth';
 import useProcessStatusStore from '../stores/processStatus';
@@ -145,6 +146,12 @@ const colorArray = computed(()=>{
             }
         ];
 });
+
+const editorContainerElement = useTemplateRef('editorContainerElement');
+const editorRevisionHistoryElement = useTemplateRef('editorRevisionHistoryElement');
+const editorRevisionHistoryEditorElement = useTemplateRef('editorRevisionHistoryEditorElement');
+const editorRevisionHistorySidebarElement = useTemplateRef('editorRevisionHistorySidebarElement');
+
 const contentRecord = ref({});
 const commentArray = ref([]);
 const hasExternalComments = computed(()=>{
@@ -220,7 +227,7 @@ const editorConfig = computed (()=>{ return {
             Underline,
             WordCount
         ],
-        extraPlugins: [ CommentsAdapter ],
+        extraPlugins: [ CommentsAdapter, RevisionHistoryAdapter ],
         autosave: {
             save( editor ) {
                 handleAutoSave( editor.getData() );
@@ -311,6 +318,12 @@ const editorConfig = computed (()=>{ return {
                     defaultItem: 'imageStyle:margin-left'
                 }
             ]
+        },
+        revisionHistory: {
+            editorContainer: editorContainerElement.value,
+            viewerContainer: editorRevisionHistoryElement.value,
+            viewerEditorElement: editorRevisionHistoryEditorElement.value,
+            viewSidebarContainer: editorRevisionHistorySidebarElement.value
         },
         salesforceApi: {
             baseUri: props.apiUrl,
@@ -470,7 +483,7 @@ const editorConfig = computed (()=>{ return {
             'alignment','bold','italic','underline','strikethrough','subscript','superscript','removeFormat','formatPainter','|',
             'fontBackgroundColor','fontColor','fontSize','fontFamily','|','link','bulletedList','numberedList','selectAll','|',
             'horizontalLine','outdent','indent','|','imageUpload','blockQuote','insertTable','mediaEmbed','insertTemplate',
-            'specialCharacters','undo','redo','findAndReplace','|','comment','commentsArchive','|','revisionHistory'
+            'specialCharacters','undo','redo','findAndReplace','|','comment','commentsArchive','revisionHistory'
         ],
         licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE,
     };
@@ -712,7 +725,14 @@ onBeforeMount(()=>{
     </div>
     <!-- END : Header and Actions-->
 
-    <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit"/>
+    <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit" ref="editorContainerElement" />
+
+    <div class="revision-history" ref="editorRevisionHistoryElement">
+        <div class="revision-history__wrapper">
+            <div class="revision-history__editor" ref="editorRevisionHistoryEditorElement"></div>
+            <div class="revision-history__sidebar" ref="editorRevisionHistorySidebarElement"></div>
+        </div>
+    </div>
 
     <!-- BEGIN : Comment Information-->
     <div v-if="hasExternalComments" class="slds-card slds-var-m-top_large">
@@ -786,6 +806,4 @@ onBeforeMount(()=>{
     ::selection {
         background: red;
     }
-
-
 </style>
