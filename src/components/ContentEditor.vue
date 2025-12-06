@@ -320,10 +320,8 @@ const editorConfig = computed (()=>{ return {
             ]
         },
         revisionHistory: {
-            editorContainer: editorContainerElement.value,
-            viewerContainer: editorRevisionHistoryElement.value,
             viewerEditorElement: editorRevisionHistoryEditorElement.value,
-            viewSidebarContainer: editorRevisionHistorySidebarElement.value
+            viewerContainer: editorRevisionHistoryElement.value
         },
         salesforceApi: {
             baseUri: props.apiUrl,
@@ -724,13 +722,18 @@ onBeforeMount(()=>{
         </div>
     </div>
     <!-- END : Header and Actions-->
+    <div class="editor-container editor-container_classic-editor" id="editorContainerTest" ref="editorContainerElement">
+        <div class="editor-container__element">
+            <div class="editorElement">
+                <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit" />
+            </div>
+        </div>
+    </div>
 
-    <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit" ref="editorContainerElement" />
-
-    <div class="revision-history" ref="editorRevisionHistoryElement">
-        <div class="revision-history__wrapper">
-            <div class="revision-history__editor" ref="editorRevisionHistoryEditorElement"></div>
-            <div class="revision-history__sidebar" ref="editorRevisionHistorySidebarElement"></div>
+    <div class="revision-history slds-grid slds-wrap" id="editorRevisionHistoryTest" ref="editorRevisionHistoryElement" >
+        <div class="revision-history__wrapper slds-col slds-size_1-of-1 slds-grid slds-wrap">
+            <div class="revision-history__editor slds-col slds-size_2-of-3" id="editorRevisionEditorTest" ref="editorRevisionHistoryEditorElement"></div>
+            <div class="revision-history__sidebar slds-col slds-size_1-of-3" id="editorRevisionSidebarTest" ref="editorRevisionHistorySidebarElement"></div>
         </div>
     </div>
 
@@ -805,5 +808,13 @@ onBeforeMount(()=>{
     }
     ::selection {
         background: red;
+    }
+    #editorRevisionEditorTest {
+        min-height: 100px;
+        border: solid 2px rgb(255,0,0);
+    }
+    #editorRevisionSidebarTest {
+        min-height: 100px;
+        border: solid 2px rgb(0,0,255);
     }
 </style>
