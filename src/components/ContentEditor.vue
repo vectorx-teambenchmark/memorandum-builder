@@ -1,16 +1,16 @@
 <script setup>
 import axios from 'axios';
-import { ref, onBeforeMount, computed, watch, useTemplateRef } from 'vue';
+import { ref, onBeforeMount, onMounted, computed, watch, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { Ckeditor } from '@ckeditor/ckeditor5-vue';
 //updated imports for ckeditor 5 since version 45
-import { Autosave, ClassicEditor, Essentials, Alignment, Bold, Italic, Strikethrough, Subscript, Superscript, Underline, 
+import { ClassicEditor, Essentials, Alignment, Bold, Italic, Subscript, Superscript, Underline, 
     BlockQuote, FindAndReplace, GeneralHtmlSupport, List, ListProperties, FontBackgroundColor, FontColor, FontFamily, 
     FontSize, HorizontalLine, HtmlEmbed, Image, ImageCaption, ImageResize, ImageStyle, ImageToolbar, ImageUpload,
     Indent, IndentBlock, Link, LinkImage, MediaEmbed, MediaEmbedToolbar, Mention, Paragraph, PasteFromOffice, RemoveFormat, SelectAll,
-    SourceEditing, SpecialCharacters, SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials,
+    SimpleUploadAdapter, SourceEditing, SpecialCharacters, SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials,
     SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Style, Table, TableCaption, TableCellProperties,
-    TableColumnResize, TableProperties, TableToolbar, SimpleUploadAdapter, WordCount
+    TableColumnResize, TableProperties, TableToolbar, WordCount
 } from 'ckeditor5';
 import { Comments, FormatPainter, PasteFromOfficeEnhanced, SlashCommand, Template, RevisionHistory } from 'ckeditor5-premium-features';
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter';
@@ -51,20 +51,6 @@ const props = defineProps({
         return '';
     }
    },
-   contentTitle: {
-    type: String,
-    required: true,
-    default(){
-        return 'N/A';
-    }
-   },
-   bodyContent: {
-    type: String,
-    required: true,
-    default(){
-        return '';
-    }
-   },
    approvalRequestSubmitted: {
     type: Boolean,
     default(){
@@ -78,206 +64,83 @@ const props = defineProps({
     }
    } 
 });
-const emit = defineEmits(['contentupdated']);
-const authStore = useAuthStore();
-const processStatus = useProcessStatusStore();
+
 const router = useRouter();
-const colorArray = computed(()=>{
+
+const editorContainer = useTemplateRef('editorContainerElement');
+const editorRevisionHistory = useTemplateRef('editorRevisionHistoryElement');
+const editorRevisionHistoryEditor = useTemplateRef('editorRevisionHistoryEditorElement');
+const editorRevisionHistorySidebar = useTemplateRef('editorRevisionHistorySidebarElement');
+
+const contentName = computed(() => {
+    return content.value?.Parent__r?.Name + ' - ' + content.value?.Name;
+});
+
+const colorArray = computed(() => {
     return [
-            {
-                color: '#EEEEEE',
-                name: '#EEEEEE'
-            },
-            {
-                color: '#AAAAAA',
-                name: '#AAAAAA'
-            },
-            {
-                color: '#47B0DE',
-                name: '#47B0DE'
-            },
-            {
-                color: '#468FE8',
-                name: '#468FE8'
-            },
-            {
-                color: '#5989B2',
-                name: '#5989B2'
-            },
-            {
-                color: '#4A7395',
-                name: '#4A7395'
-            },
-            {
-                color: '#446988',
-                name: '#446988'
-            },
-            {
-                color: '#D5B176',
-                name: '#D5B176'
-            },
-            {
-                color: '#B18F6A',
-                name: '#B18F6A'
-            },
-            {
-                color: '#B3704F',
-                name: '#B3704F'
-            },
-            {
-                color: '#9C9D98',
-                name: '#9C9D98'
-            },
-            {
-                color: '#7B7F80',
-                name: '#7B7F80'
-            },
-            {
-                color: '#495A6F',
-                name: '#495A6F'
-            },
-            {
-                color: '#2C3C49',
-                name: '#2C3C49'
-            },
-            {
-                color: '#222222',
-                name: '#222222'
-            }
-        ];
+        {color: '#EEEEEE', name: '#EEEEEE'}, {color: '#AAAAAA', name: '#AAAAAA'}, {color: '#47B0DE', name: '#47B0DE'},
+        {color: '#468FE8', name: '#468FE8'}, {color: '#5989B2', name: '#5989B2'}, {color: '#4A7395', name: '#4A7395'},
+        {color: '#446988', name: '#446988'}, {color: '#D5B176', name: '#D5B176'}, {color: '#B18F6A', name: '#B18F6A'},
+        {color: '#B3704F', name: '#B3704F'}, {color: '#9C9D98', name: '#9C9D98'}, {color: '#7B7F80', name: '#7B7F80'},
+        {color: '#495A6F', name: '#495A6F'}, {color: '#2C3C49', name: '#2C3C49'}, {color: '#222222', name: '#222222'}
+    ];
 });
-
-const editorContainerElement = useTemplateRef('editorContainerElement');
-const editorRevisionHistoryElement = useTemplateRef('editorRevisionHistoryElement');
-const editorRevisionHistoryEditorElement = useTemplateRef('editorRevisionHistoryEditorElement');
-const editorRevisionHistorySidebarElement = useTemplateRef('editorRevisionHistorySidebarElement');
-
-const contentRecord = ref({});
-const commentArray = ref([]);
-const hasExternalComments = computed(()=>{
-    return commentArray.value.length > 0;
-});
-const recordApiUrl = computed(()=>{
-    return `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`
-});
-const showOnlyComments = computed(()=>{
-    return props.approvalRequestSubmitted || props.isPublished;
-});
-const editorInstance = ClassicEditor;
-const editorConfig = computed (()=>{ return {
+const config = computed(()=>{
+    if(!isLayoutReady.value) {
+        return null;
+    }
+    return {
+        licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE,
+        salesforceApi: {
+            baseUri: props.apiUrl,
+            accessToken: props.accessToken,
+            currentUserUri: props.idUrl,
+            contentId: props.recordId
+        },
         plugins: [
-            Alignment,
-            Autosave,
-            BlockQuote,
-            Bold,
-            Comments,
-            List,
-            ListProperties,
-            Essentials,
-            FindAndReplace,
-            FontBackgroundColor, 
-            FontColor, 
-            FontFamily, 
-            FontSize,
-            FormatPainter,
-            GeneralHtmlSupport,
-            HorizontalLine,
-            HtmlEmbed,
-            Italic,
-            Image, 
-            ImageCaption, 
-            ImageResize, 
-            ImageStyle, 
-            ImageToolbar, 
-            ImageUpload,
-            Indent,
-            IndentBlock,
-            Link,
-            LinkImage,
-            MediaEmbed, 
-            MediaEmbedToolbar,
-            Mention,
-            Paragraph,
-            PasteFromOffice,
-            PasteFromOfficeEnhanced,
-            RemoveFormat,
-            RevisionHistory,
-            SelectAll,
-            SimpleUploadAdapter,
-            SlashCommand,
-            SourceEditing,
-            Strikethrough, 
-            SpecialCharacters, 
-            SpecialCharactersArrows, 
-            SpecialCharactersCurrency, 
-            SpecialCharactersEssentials, 
-            SpecialCharactersLatin, 
-            SpecialCharactersMathematical, 
-            SpecialCharactersText,
-            Style,
-            Subscript, 
-            Superscript,
-            Table, 
-            TableCaption, 
-            TableCellProperties, 
-            TableColumnResize, 
-            TableProperties, 
-            TableToolbar,
-            Template,
-            Underline,
-            WordCount
+            Alignment, BlockQuote, Bold, Comments, List, ListProperties, Essentials, FindAndReplace, FontBackgroundColor,
+            FontColor, FontFamily, FontSize, FormatPainter, GeneralHtmlSupport, HorizontalLine, HtmlEmbed, Italic, Image, ImageCaption,
+            ImageResize, ImageStyle, ImageToolbar, ImageUpload, Indent, IndentBlock, Link, LinkImage, MediaEmbed, MediaEmbedToolbar,
+            Mention, Paragraph, PasteFromOffice, PasteFromOfficeEnhanced, RemoveFormat, RevisionHistory, SelectAll, SimpleUploadAdapter,
+            SlashCommand, SourceEditing, SpecialCharacters, SpecialCharactersArrows, SpecialCharactersCurrency, SpecialCharactersEssentials,
+            SpecialCharactersLatin, SpecialCharactersMathematical, SpecialCharactersText, Style, Subscript, Superscript, Table,
+            TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar, Template, Underline, WordCount
         ],
         extraPlugins: [ CommentsAdapter, RevisionHistoryAdapter ],
-        autosave: {
-            save( editor ) {
-                handleAutoSave( editor.getData() );
-            }
-        },
-        comments:{
-            editorConfig: {
-                extraPlugins: [ Bold, Italic, List ]
-            }
+        toolbar: [
+            'style','alignment','bold','italic','underline','strikethough','subscript','superscript','removeFormat','formatPainter','|',
+            'fontBackgroundColor','fontColor','fontSize','fontFamily','|',
+            'link','bulletedList','numberedList','selectAll','|',
+            'horizontalLine','outdent','indent','|',
+            'imageUpload','blockQuote','insertTable','mediaEmbed','insertTemplate','specialCharacters','undo','redo','findAndReplace','|',
+            'comment','commentsArchive','revisionHistory'
+        ],
+        extraPlugins: [],
+        comments: {
+            editorConfig: { extraPlugins: [ Bold, Italic, List ] }
         },
         fontBackgroundColor: {
-            colors:colorArray.value
+            colors: colorArray.value
         },
         fontColor: {
-            colors:colorArray.value
+            colors: colorArray.value
         },
         fontFamily: {
-            options:[
-                'Poppins',
-                'Passenger Display Regular',
-                'Passenger Display Bold',
-                'Passenger Display Bold Italic',
-                'Passenger Display Extra Bold',
-                'Passenger Display Extra Bold Italic',
-                'Passenger Display Extra Light',
+            options: [
+                'Poppins','Passenger Display Regular','Passenger Display Bold','Passenger Display Bold Italic',
+                'Passenger Display Extra Bold','Passenger Display Extra Bold Italic','Passenger Display Extra Light',
                 'Passenger Display Extra Light Italic'
             ]
         },
-        fontSize:{
+        fontSize: {
             options: [14,9,10,11,12,16,18,20,24,32,48,60]
         },
         htmlSupport:{
-            allow:[
-                {
-                    name: 'div',
-                    attributes: true,
-                    classes: true,
-                    styles: true
-                }
-            ]
+            allow:[{ name: 'div', attributes: true, classes: true, styles: true }]
         },
         image: {
-            insert: {
-                type:'block'
-            },
-            toolbar: [
-                'imageTextAlternative',
-                'toggleImageCaption',
-                'linkImage',
-                '|',
+            insert: {type:'block'},
+            toolbar: ['imageTextAlternative','toggleImageCaption','linkImage','|',
                 {
                     name:'imageStyle:icons',
                     title:'Inline Alignment',
@@ -305,29 +168,22 @@ const editorConfig = computed (()=>{ return {
                 }  
             ],
             toolbar:[
-            {
+                {
                     // Grouping the buttons for the icon-like image styling
                     // into one drop-down.
                     name: 'imageStyle:icons',
                     title: 'Alignment',
-                    items: [
-                        'imageStyle:margin-left',
-                        'imageStyle:margin-right',
-                        'imageStyle:inline'
-                    ],
+                    items: ['imageStyle:margin-left','imageStyle:margin-right','imageStyle:inline'],
                     defaultItem: 'imageStyle:margin-left'
                 }
             ]
         },
         revisionHistory: {
-            viewerEditorElement: editorRevisionHistoryEditorElement.value,
-            viewerContainer: editorRevisionHistoryElement.value
-        },
-        salesforceApi: {
-            baseUri: props.apiUrl,
-            accessToken: props.accessToken,
-            currentUserUri: props.idUrl,
-            contentId: props.recordId
+            editorContainer: editorContainer.value,
+            viewerContainer: editorRevisionHistory.value,
+            viewerEditorElement: editorRevisionHistoryEditor.value,
+            viewerSidebarContainer: editorRevisionHistorySidebar.value,
+            resumeUnsavedRevision: false
         },
         simpleUpload: {
             uploadUrl: import.meta.env.VITE_IMAGE_PROCESSOR
@@ -362,21 +218,9 @@ const editorConfig = computed (()=>{ return {
             ]
         },
         table: {
-            contentToolbar: [
-                'tableColumn',
-                'tableRow',
-                'mergeTableCells',
-                'tableCellProperties',
-                'tableProperties'
-            ],
-            tableProperties: {
-                borderColors: colorArray.value,
-                backgroundColors: colorArray.value
-            },
-            tableCellProperties: {
-                borderColors: colorArray.value,
-                backgroundColors: colorArray.value
-            }
+            contentToolbar: ['tableColumn','tableRow','mergeTableCells','tableCellProperties','tableProperties'],
+            tableProperties: { borderColors: colorArray.value, backgroundColors: colorArray.value },
+            tableCellProperties: { borderColors: colorArray.value, backgroundColors: colorArray.value }
         },
         template: {
             definitions: [
@@ -476,172 +320,61 @@ const editorConfig = computed (()=>{ return {
                     data: `<p>&nbsp;</p><div class="slds-grid slds-wrap"><div class="template slds-col slds-size_1-of-2 slds-var-p-right_small"><p style="text-align:justify;"><span style="background-color:rgb(255,255,255);color:rgb(51,51,51);font-size:16px;">Ground round chicken prosciutto, venison jerky jowl buffalo cupim flank sirloin tail strip steak swine. Salami strip steak meatloaf jerky chicken rump pastrami jowl kielbasa t-bone prosciutto tri-tip pork. Buffalo venison short loin burgdoggen pastrami chislic tenderloin bacon. Cow turkey capicola, doner pastrami tri-tip cupim shankle ham hock pig chicken boudin tail. Ham hock filet mignon brisket capicola, turducken picanha shank pork loin tongue sausage spare ribs leberkas. Chislic t-bone tri-tip strip steak pork frankfurter. Buffalo chicken tri-tip swine tail hamburger.</span></p></div><div class="template slds-col slds-size_1-of-2 slds-var-p-left_small"><p style="text-align:justify;"><span style="background-color:rgb(255,255,255);color:rgb(51,51,51);font-size:16px;">Beef pork ham strip steak short ribs burgdoggen pastrami hamburger ribeye filet mignon rump boudin shank. Rump salami porchetta t-bone tail meatball beef ribs fatback meatloaf pork chop cupim ball tip. Prosciutto kevin swine pancetta, ball tip rump jerky sirloin porchetta drumstick landjaeger. Landjaeger bresaola jowl, pork pork belly picanha beef jerky prosciutto tail venison. Burgdoggen capicola doner rump shoulder. Venison porchetta drumstick picanha buffalo doner meatball pancetta bresaola tail cow beef ribs. Picanha doner beef ribs pancetta pork t-bone.</span></p></div><div class="template slds-col slds-size_1-of-1 slds-var-m-top_small"><p style="text-align:justify;"><span style="background-color:rgb(255,255,255);color:rgb(51,51,51);font-size:16px;">Bacon ipsum dolor amet leberkas brisket sausage pastrami shoulder rump, capicola shank tail flank hamburger tenderloin shankle. Brisket pork belly venison tenderloin beef kevin chicken chuck fatback, kielbasa pig. Jerky pastrami picanha tenderloin. Turducken cow biltong pork, shoulder chislic flank ham porchetta burgdoggen. Chuck doner kielbasa turkey fatback tongue ham. Sirloin prosciutto ham beef ribs, tri-tip burgdoggen ham hock kevin pastrami jerky kielbasa. Doner beef ribs kielbasa strip steak cupim ball tip chuck meatloaf landjaeger tenderloin shankle jerky corned beef venison.</span></p></div></div><p>&nbsp;</p>`
                 }
             ]
-        },
-        toolbar: ['style',
-            'alignment','bold','italic','underline','strikethrough','subscript','superscript','removeFormat','formatPainter','|',
-            'fontBackgroundColor','fontColor','fontSize','fontFamily','|','link','bulletedList','numberedList','selectAll','|',
-            'horizontalLine','outdent','indent','|','imageUpload','blockQuote','insertTable','mediaEmbed','insertTemplate',
-            'specialCharacters','undo','redo','findAndReplace','|','comment','commentsArchive','revisionHistory'
-        ],
-        licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE,
-    };
+        }
+    }
 });
-const editorData = ref('');
-const contentName = computed(()=>{
-    return (contentRecord.value?.Name !== undefined && contentRecord.value?.Parent__r?.Name !== undefined) ? `${contentRecord.value.Parent__r.Name}: ${contentRecord.value.Name}`:'';
-});
-const editorRef = ref({});
-const modalText  = ref('Saving...');
-const showModal = ref(false);
-const autoSavePending = ref(false);
-const displayPendingSave = computed(()=>{ return false; });
-const displayRenameContentForm = ref(false);
+const editorContent = computed( () => {
+    console.log('editorContent computed called.');
+    return (content.value?.Body__c === undefined) ? '' : content.value.Body__c;
+})
+const editor = ref({});
+const content = ref({});
+const isLayoutReady = ref(false);
 
-function handleCalloutException(e) {
-    switch(e.response.status) {
-        case 401:
-            authStore.$reset();
-            router.push({name:'home'});
-            break;
-        default:
-            console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
-    }
-}
-function handleSave(){
-    showModal.value = true;
-    axios.patch(recordApiUrl.value,{'Body__c':editorData.value},{
-        headers:{
-            'Content-Type':'application/json',
-            'Authorization':`Bearer ${props.accessToken}`
-        }
-    }).then(response =>{
-        if(response.status < 300){
-             modalText.value = 'Save Complete';
-             setTimeout(closeModal,2000);
-        }
-    }).catch((err)=>{
-        console.log('There was an error updating the record: %s',JSON.stringify(err,null,"\t"));
-    });
-}
-function handleAutoSave( editorData ) {
-    //build the data objects
-    let dataObj = { Body__c: editorData };
-    return axios.patch(recordApiUrl.value,dataObj, {
-        headers: {'authorization':`Bearer ${props.accessToken}`,'content-type':'application/json'}
-    });
-}
-function closeModal(){
-    showModal.value = false;
-}
-function issueDebug(){
-    console.log(editorData.value);
-}
-function handleEditorInit(editor){
-    
-    if(showOnlyComments.value){
-        editor.plugins.get('CommentsOnly').isEnabled = true;
-    }
-    const pendingActions = editor.plugins.get('PendingActions');
-    const commentsActions = editor.plugins.get('CommentsRepository');
-    pendingActions.on('change:hasAny',(evt, propertyName, newValue) => {
-        if(newValue) {
-            processStatus.setContentEditorBusy();
-            autoSavePending.value = true;
-        } else {
-            processStatus.setContentEditorReady();
-            autoSavePending.value = false;
-        }
-    });
-    commentsActions.on('addComment',(evt,data)=>{
-        setTimeout(()=>{
-            emit('contentupdated');
-        },1000);
-    });
-    commentsActions.on('deleteComment',(evt,data)=>{
-        setTimeout(()=>{
-            emit('contentupdated');
-        },1000);
-    });
-    commentsActions.on('resolveCommentThread',(evt,data)=>{
-        setTimeout(()=>{
-            emit('contentupdated');
-        },1000);
-    });
-    commentsActions.on('reopenCommentThread',(evt,data)=>{
-        setTimeout(()=>{
-            emit('contentupdated');
-        },1000);
-    });
-    
-   editorRef.value = editor;
-}
-async function refreshContentRecord(recordIdVal){
+/*
+BEGIN: function definitions
+*/
+const obtainContent = async (recordIdVal) => {
     try {
-        let contentEndpoint = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/memorandumcontent__c/${recordIdVal}`;
-        contentEndpoint += `?fields=Id,Name,CurrencyIsoCode,Body__c,Parent__c,Parent__r.Name,Order__c,DisplayRecordName__c,ActiveComments__c,ExternalComments__c`
-        let commentQuery = encodeURIComponent(`SELECT Id, Text__c, CreatedDate FROM MemorandumExternalComment__c WHERE Parent__c = '${props.recordId}'`);
-        let commentQueryEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${commentQuery}`;
-        let contentResponse = await axios.get(contentEndpoint,{
-            responseType:'json',
-            headers:{'authorization':`Bearer ${props.accessToken}`}
+        var queryUrl = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${recordIdVal}`;
+        queryUrl += `?fields=Id,Name,CurrencyIsoCode,Body__c,Parent__c,Parent__r.Name,Order__c,DisplayRecordName__c,ActiveComments__c,ExternalComments__c`;
+        let contentResponse = await axios.get(queryUrl, {
+            headers:{'authorization':`Bearer ${props.accessToken}`},
+            responseType:'json'
         });
-        let commentResponse = await axios({
-            method: 'get',
-            url: commentQueryEndpoint,
-            responseType: 'json',
-            headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
-        });
-        contentRecord.value = contentResponse.data;
-        console.log('Content Record: %s',JSON.stringify(contentRecord.value,null,"\t"));
-        commentArray.value = commentResponse.data.records.map(item => item);
-        editorData.value = (contentRecord.value?.Body__c === undefined || contentRecord.value?.Body__c === null) ? '':contentRecord.value.Body__c;
-    } catch(e) {
-        console.log('Error getting content: %s',JSON.stringify(e,null,"\t"))
-    }
-}
-async function handleSaveInformation(){
-    try {
-        let contentUpdateEndpoint =`${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${contentRecord.value.Id}`;
-        let tempObject = Object.assign({},{Name:contentRecord.value.Name});
-        await axios({
-            method: 'patch',
-            url: contentUpdateEndpoint,
-            data: tempObject,
-            headers: {'authorization':`Bearer ${props.accessToken}`}
-
-        });
-        displayRenameContentForm.value = false;
-        emit('contentupdated');
-        refreshContentRecord(contentRecord.value.Id);
-    } catch(e) {
-        handleCalloutException(e);
+        content.value = contentResponse.data;
+        console.log('Content obtained: %s', JSON.stringify(content.value, null, "\t"));
+    } catch (e) {
+        console.log('Error getting content: %s', JSON.stringify(e, null, "\t"));
     }
 }
 
-/**
- * watchers
- */
-watch(() => props.recordId, async (newValue)=>{
-    console.log('The record Id has changed. %s',newValue);
-    sessionStorage.setItem('currentRecordId',newValue);
-    refreshContentRecord(newValue);
+function editorReady(editorInstance) {
+    console.log('Editor is ready to use!');
+    editorInstance.setData(content.value.Body__c);
+}
+/*
+END: function definitions
+*/
+
+/*
+BEGIN: lifecycle hooks
+*/
+onBeforeMount( async () => {
+    editor.value = ClassicEditor;
+    await obtainContent(props.recordId);
 });
-watch(() => props.approvalRequestSubmitted,(newValue,oldValue)=>{
-    console.log('The Request Submitted property has changed: new Value: %s, old Value: %s',newValue,oldValue);
-    editorRef.value.plugins.get('CommentsOnly').isEnabled = newValue;
+onMounted(() => {
+    isLayoutReady.value = true;
+});
+watch( () => props.recordId, async (newVal) => {
+    // isLayoutReady.value = false;
+    await obtainContent(newVal);
+    // isLayoutReady.value = true;
 });
 /*
-watch(()=> autoSavePending.value,(newValue,oldValue)=>{
-    console.log('The autoSavePending property changed from %s to %s',oldValue,newValue);
-})
+END: lifecycle hooks
 */
-/**
- * Lifecycle methods
- */
-onBeforeMount(()=>{
-    refreshContentRecord(props.recordId);
-    sessionStorage.setItem('currentRecordId',props.recordId);
-});
 
 </script>
 
@@ -722,20 +455,24 @@ onBeforeMount(()=>{
         </div>
     </div>
     <!-- END : Header and Actions-->
-    <div class="editor-container editor-container_classic-editor" id="editorContainerTest" ref="editorContainerElement">
-        <div class="editor-container__element">
-            <div class="editorElement">
-                <ckeditor :editor="editorInstance" v-model="editorData" :config="editorConfig" v-on:ready="handleEditorInit" />
-            </div>
-        </div>
-    </div>
 
-    <div class="revision-history slds-grid slds-wrap" id="editorRevisionHistoryTest" ref="editorRevisionHistoryElement" >
-        <div class="revision-history__wrapper slds-col slds-size_1-of-1 slds-grid slds-wrap">
-            <div class="revision-history__editor slds-col slds-size_2-of-3" id="editorRevisionEditorTest" ref="editorRevisionHistoryEditorElement"></div>
-            <div class="revision-history__sidebar slds-col slds-size_1-of-3" id="editorRevisionSidebarTest" ref="editorRevisionHistorySidebarElement"></div>
-        </div>
-    </div>
+    <!-- BEGIN: Editor -->
+    <div class="main-container">
+		<div class="editor-container editor-container_classic-editor editor-container_include-style" ref="editorContainerElement">
+			<div class="editor-container__editor">
+				<div ref="editorElement">
+					<ckeditor v-if="isLayoutReady" :editor="editor" :config="config" :modelValue="editorContent" v-on:ready="editorReady" />
+				</div>
+			</div>
+		</div>
+        <div class="revision-history" ref="editorRevisionHistoryElement">
+			<div class="revision-history__wrapper">
+				<div class="revision-history__editor" ref="editorRevisionHistoryEditorElement"></div>
+				<div class="revision-history__sidebar" ref="editorRevisionHistorySidebarElement"></div>
+			</div>
+		</div>
+	</div>
+    <!-- END: Editor -->
 
     <!-- BEGIN : Comment Information-->
     <div v-if="hasExternalComments" class="slds-card slds-var-m-top_large">
