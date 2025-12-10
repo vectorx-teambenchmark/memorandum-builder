@@ -262,7 +262,6 @@ const config = computed(() => {
       'commentsArchive',
       'revisionHistory'
     ],
-    extraPlugins: [],
     comments: {
       editorConfig: { extraPlugins: [Bold, Italic, List] }
     },
@@ -492,7 +491,7 @@ const config = computed(() => {
 })
 const editorContent = computed(() => {
   console.log('editorContent computed called.')
-  return content.value?.Body__c === undefined ? '' : content.value.Body__c
+  return (content.value?.Body__c === undefined || content.value?.Body__c === null || !Object.hasOwn(content.value, 'Body__c')) ? '' : content.value.Body__c
 })
 const editor = ref({})
 const content = ref({})
@@ -503,13 +502,16 @@ BEGIN: function definitions
 */
 const obtainContent = async (recordIdVal) => {
   try {
+    console.log('obtainContent called with recordIdVal: %s', recordIdVal);
     var queryUrl = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${recordIdVal}`
     queryUrl += `?fields=Id,Name,CurrencyIsoCode,Body__c,Parent__c,Parent__r.Name,Order__c,DisplayRecordName__c,ActiveComments__c,ExternalComments__c`
     let contentResponse = await axios.get(queryUrl, {
       headers: { authorization: `Bearer ${props.accessToken}` },
       responseType: 'json'
     })
-    content.value = contentResponse.data
+    if (contentResponse.data !== null && contentResponse.data !== undefined){
+      content.value = contentResponse.data
+    }
     console.log('Content obtained: %s', JSON.stringify(content.value, null, '\t'))
   } catch (e) {
     console.log('Error getting content: %s', JSON.stringify(e, null, '\t'))
@@ -518,7 +520,9 @@ const obtainContent = async (recordIdVal) => {
 
 function editorReady(editorInstance) {
   console.log('Editor is ready to use!')
-  editorInstance.setData(content.value.Body__c)
+  if(editorInstance !== null && editorInstance !== undefined){
+    editorInstance.setData(content.value.Body__c);
+  }
 }
 /*
 END: function definitions
