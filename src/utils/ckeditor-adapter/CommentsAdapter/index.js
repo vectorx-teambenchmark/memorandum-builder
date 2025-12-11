@@ -27,7 +27,7 @@ export class CommentsAdapter extends Plugin {
         let baseUrl = this.editor.config.get('salesforceApi').baseUri;
         let accessToken = this.editor.config.get('salesforceApi').accessToken;
         let userQuery = encodeURIComponent('SELECT Id, Name, Alias, Username FROM User WHERE IsActive=true AND IsPortalEnabled=false');
-        let userQueryEndpoint = `${baseUrl}/services/data/v59.0/query?q=${userQuery}`;
+        let userQueryEndpoint = `${baseUrl}/services/data/v64.0/query?q=${userQuery}`;
         try {
             let userQueryResponse = await axios({
                 method: 'get',

@@ -186,9 +186,8 @@ onBeforeMount(() => {
             <SectionManager v-if="isSectionSelected" v-bind:section-id="selectedRecord.Id" v-on:sectionupdate="refreshVersionSections" 
                 v-bind:restrict-editing="requestSubmitted || isPublished" v-on:sectiondelete="refreshVersionSections" v-on:contentselection="handleRecordSelection" 
                 v-on:contentupdate="refreshVersionContents"/>
-            <ContentEditor v-if="isContentSelected" v-bind:record-id="selectedRecord.Id" v-bind:api-url="authStore.apiUrl" v-bind:access-token="authStore.bearerToken"
-                v-bind:id-url="authStore.idUrl" v-bind:content-title="selectedRecord.Name" v-bind:body-content="selectedRecord.Body__c"
-                v-bind:approval-request-submitted="requestSubmitted" v-bind:is-published="isPublished" v-on:contentupdated="refreshVersionContents"/>
+            <ContentEditor v-if="isContentSelected" :key="selectedRecord.Id" v-bind:record-id="selectedRecord.Id" v-bind:api-url="authStore.apiUrl" v-bind:access-token="authStore.bearerToken"
+                v-bind:id-url="authStore.idUrl" v-bind:approval-request-submitted="requestSubmitted" v-bind:is-published="isPublished" v-on:contentupdated="refreshVersionContents"/>
         </div>
     </div>
 </template>
