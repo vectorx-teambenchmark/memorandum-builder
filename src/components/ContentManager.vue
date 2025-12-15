@@ -38,18 +38,24 @@ const sectionArray = ref([]);
 const showNewContentForm = ref(false);
 const newContentDisplayName = ref(false);
 const showContentCloneForm = ref(false);
+const deleteOriginalContent = ref(false);
 const newContentName = ref('');
 const selectedCloneContentId = ref('');
 const targetSectionId  = ref('');
 
 function handleCalloutException(e) {
-    switch(e.response.status) {
-        case 401:
-            authStore.$reset();
-            router.push({name:'home'});
-            break;
-        default:
-            console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+    if(e?.response?.status !== undefined){
+        switch(e.response.status) {
+            case 401:
+                authStore.$reset();
+                router.push({name:'home'});
+                break;
+            default:
+                console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+        }
+    } else {
+        console.error('There was a general Error');
+        console.dir(e);
     }
 }
 async function obtainContentInfo(){
@@ -233,9 +239,19 @@ async function handleCloneContent() {
             data:contentRecord,
             headers:{'authorization':`Bearer ${authStore.bearerToken}`}
         });
+        // Delete original content if requested
+        if(deleteOriginalContent.value) {
+            let deleteEndpoint = `${authStore.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${selectedCloneContentId.value}`;
+            await axios({
+                method:'delete',
+                url:deleteEndpoint,
+                headers:{'Authorization':`Bearer ${authStore.bearerToken}`}
+            });
+        }
         emit('contentupdate');
         await obtainContentInfo();
         showContentCloneForm.value = false;
+        deleteOriginalContent.value = false;
     } catch(e) {
         handleCalloutException(e);
     }
@@ -294,7 +310,7 @@ onBeforeMount(async ()=>{
             <div class="slds-col sls-size_1-of-3 slds-text-align_right">
                 <div v-if="allowEditing" class="slds-button-group">
                     <button class="slds-button slds-button_brand" v-on:click="emit('contentselection',contentItem.Id)">Edit Content</button>
-                    <button class="slds-button slds-button_brand" v-on:click="handleShowCloneContentForm(contentItem.Id)">Clone Content</button>
+                    <button class="slds-button slds-button_brand" v-on:click="handleShowCloneContentForm(contentItem.Id)">Clone/Move Content</button>
                     <button class="slds-button slds-button_neutral" v-bind:disabled="contentItem.isFirst" v-on:click="handleMoveContentUp(contentItem.Id)">Move Content Up</button>
                     <button class="slds-button slds-button_neutral" v-bind:disabled="contentItem.isLast" v-on:click="handleMoveContentDown(contentItem.Id)">Move Content Down</button>
                     <button class="slds-button slds-button_destructive" v-on:click="handleDeleteContent(contentItem.Id)">Delete Content</button>
@@ -345,6 +361,17 @@ onBeforeMount(async ()=>{
             <div class="slds-modal__content slds-p-around_medium modal-long">
                 <!-- Content here -->
                 <SelectorBox label="Select Section To Clone Into" placeholder="Select Section" v-bind:options="sectionArray" v-model="selectedCloneContentId" v-on:selection="handleSectionSelection($event)"/>
+                <div class="slds-form-element slds-m-top_medium">
+                    <div class="slds-form-element__control">
+                        <div class="slds-checkbox">
+                            <input type="checkbox" id="chkDeleteOriginal" v-model="deleteOriginalContent" />
+                            <label class="slds-checkbox__label" for="chkDeleteOriginal">
+                                <span class="slds-checkbox_faux"></span>
+                                <span class="slds-form-element__label">Delete original content after cloning</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="slds-modal__footer">
                 <button class="slds-button slds-button_neutral" v-on:click="showContentCloneForm = false">Cancel</button>
