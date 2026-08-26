@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 import { useRoute } from 'vue-router';
 import useAuthStore from '../stores/auth';
 
@@ -10,18 +10,90 @@ const emit = defineEmits({
 
 const authStore = useAuthStore();
 const route = useRoute();
+const isExchanging = ref(false);
+const exchangeError = ref('');
 
-function authNavigation(){
-    let fullUrl = `${authStore.authUrl}?client_id=${authStore.clientId}&redirect_uri=${authStore.callbackUrl}&response_type=${authStore.responseType}&display=${authStore.displayType}`;
-    if(route.params?.recordId !== undefined){
-        fullUrl += '&state=' + route.params.recordId;
-    }
+async function authNavigation(){
+    // Generate PKCE values before redirecting
+    const { codeChallenge, state } = await authStore.generatePKCEValues(route.params?.recordId);
+
+    let fullUrl = `${authStore.authUrl}?client_id=${authStore.clientId}` +
+        `&redirect_uri=${authStore.callbackUrl}` +
+        `&response_type=${authStore.responseType}` +
+        `&display=${authStore.displayType}` +
+        `&code_challenge=${codeChallenge}` +
+        `&code_challenge_method=S256` +
+        `&state=${state}`;
+
     window.location = fullUrl;
 }
 
+/**
+ * Handles the OAuth callback from the authorization code flow.
+ * Extracts the authorization code from the query parameters,
+ * exchanges it for tokens, and stores the result.
+ */
+async function handleAuthCallback(){
+    const code = route.query.code;
+    const returnedState = route.query.state;
+
+    if(!code || !returnedState){
+        console.warn('OAuth callback missing code or state parameter. This may be a direct navigation, not a callback.');
+        return false;
+    }
+
+    // Verify state for CSRF protection
+    if(!authStore.verifyState(returnedState)){
+        exchangeError.value = 'Security validation failed. The authorization request may have been tampered with. Please try again.';
+        console.error('State mismatch - possible CSRF attack. Expected state from sessionStorage but received:', returnedState);
+        return false;
+    }
+
+    isExchanging.value = true;
+    exchangeError.value = '';
+
+    try {
+        const tokenResponse = await authStore.exchangeCodeForToken(code);
+
+        authStore.setToken(tokenResponse.access_token);
+        authStore.setApiUrl(tokenResponse.instance_url);
+        authStore.setIdUrl(tokenResponse.id);
+
+        // Restore the recordId from the PKCE session data
+        const storedRecordId = sessionStorage.getItem('pkce_record_id');
+        if(storedRecordId){
+            route.params.recordId = storedRecordId;
+            sessionStorage.removeItem('pkce_record_id');
+        }
+
+        // Clean the authorization code and state from the browser URL so a
+        // page refresh doesn't attempt to re-use a single-use code.
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+
+        return true;
+    } catch(error){
+        console.error('Token exchange failed:', error);
+        exchangeError.value = 'Failed to complete authentication with Salesforce. ' +
+            (error.response?.data?.error_description || error.message || 'Please try again.');
+        return false;
+    } finally {
+        isExchanging.value = false;
+    }
+}
+
 //lifecycle hooks 
-onBeforeMount(()=>{
-    //determine if hash parameters have been passed in.
+onBeforeMount(async ()=>{
+    // Check for the authorization code in the query parameters (PKCE / code flow)
+    if(route.query?.code) {
+        const success = await handleAuthCallback();
+        if(success && authStore.isAuthenticated){
+            emit('authenticated');
+        }
+        return;
+    }
+
+    // Fallback: check for hash parameters (legacy implicit grant flow)
     if(route.hash !== null && route.hash.length > 0) {
         let hashInfo = route.hash.substring(1).split('&').reduce( (prevItem,hashPart) => {
             let hashKeyVal = hashPart.split('=');
@@ -35,6 +107,7 @@ onBeforeMount(()=>{
         authStore.setIdUrl(hashInfo?.id);
         route.params.recordId = hashInfo?.state;
     }
+
     if(authStore.isAuthenticated){
         emit('authenticated');
     } else {
@@ -44,7 +117,16 @@ onBeforeMount(()=>{
 </script>
 
 <template>
-    <button v-if="!authStore.isAuthenticated" class="slds-button slds-button_brand" v-on:click="authNavigation">Authorize With Salesforce</button>
+    <div v-if="isExchanging" class="slds-box slds-theme_info">
+        <p class="slds-text-body_regular">Completing authentication with Salesforce...</p>
+    </div>
+    <div v-else-if="exchangeError" class="slds-box slds-theme_alert-texture slds-theme_error">
+        <p class="slds-text-body_regular">{{ exchangeError }}</p>
+        <button class="slds-button slds-button_inverse slds-var-m-top_medium" v-on:click="exchangeError = ''">
+            Try Again
+        </button>
+    </div>
+    <button v-else-if="!authStore.isAuthenticated" class="slds-button slds-button_brand" v-on:click="authNavigation">Authorize With Salesforce</button>
     <div v-else class="slds-box slds-theme_info">
         <p class="slds-text-title_caps slds-text-color_inverse">You have successfully authenticated using Salesforce.</p>
     </div>
