@@ -184,7 +184,7 @@ const useAuthStore = defineStore('authStore',()=>{
             apiUrl:'',
             authUrl:import.meta.env.VITE_SALESFORCE_AUTH_URL,
             callbackUrl: import.meta.env.VITE_CALLBACK_URL,
-            clientId:'3MVG9eQyYZ1h89HeOdsdV9Y5dMYialY5mOZhtsRUdcePzvRoE21Je2NA9gr8f5XP31YtBvAuhcFgpVGEXX8CY',
+            clientId:'3MVG9SnjeJhUwbWF8wIwmBG.v_fbQgHMmvdgLx6LyBpc2Of9lMRtZ89TxbVOSMwdOvU.VuchgLKQcMVh1t_sR',
             idUrl:'',
             responseType:'code',
             displayType:'page'
