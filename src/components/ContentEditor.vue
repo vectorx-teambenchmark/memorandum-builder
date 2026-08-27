@@ -148,7 +148,7 @@ const colorArray = computed(() => {
   ]
 })
 const recordApiUrl = computed(()=>{
-    return `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`
+    return `${props.apiUrl}/services/data/v67.0/sobjects/memorandumcontent__c/${props.recordId}`
 });
 const config = computed(() => {
   if (!isLayoutReady.value) {
