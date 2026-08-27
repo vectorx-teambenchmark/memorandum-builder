@@ -522,6 +522,7 @@ function editorReady(editorInstance) {
   console.log('Editor is ready to use!')
   if(editorInstance !== null && editorInstance !== undefined){
     editorInstance.setData(content.value.Body__c);
+    editor.value = editorInstance;
   }
 }
 
@@ -538,7 +539,7 @@ function handleCalloutException(e) {
 
 function handleSave(){
     showModal.value = true;
-    axios.patch(recordApiUrl,{'Body__c':editorContent},{
+    axios.patch(recordApiUrl,{'Body__c':editor.value.getData()},{
         headers:{
             'Content-Type':'application/json',
             'Authorization':`Bearer ${props.accessToken}`
@@ -593,7 +594,7 @@ END: lifecycle hooks
   <!-- BEGIN : Modal-->
   <div v-if="showModal" role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
     <div class="slds-modal__container">
-      <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse">
+      <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" v-on:click="closeModal">
         <svg class="slds-button__icon ala-button__icon_large" aria-hidden="true">
           <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
         </svg>
@@ -608,7 +609,7 @@ END: lifecycle hooks
         </h2>
       </div>
       <div class="slds-modal__footer">
-        <button class="slds-button slds-button_neutral" aria-label="Cancel and close">Close</button>
+        <button class="slds-button slds-button_neutral" aria-label="Cancel and close" v-on:click="closeModal">Close</button>
       </div>
     </div>
   </div>
