@@ -147,9 +147,6 @@ const colorArray = computed(() => {
     { color: '#222222', name: '#222222' }
   ]
 })
-const recordApiUrl = computed(()=>{
-    return `${props.apiUrl}/services/data/v67.0/sobjects/memorandumcontent__c/${props.recordId}`
-});
 const config = computed(() => {
   if (!isLayoutReady.value) {
     return null
@@ -202,7 +199,6 @@ const config = computed(() => {
       PasteFromOffice,
       PasteFromOfficeEnhanced,
       RemoveFormat,
-      RevisionHistory,
       SelectAll,
       SimpleUploadAdapter,
       SlashCommand,
@@ -487,11 +483,9 @@ const config = computed(() => {
     }
   }
 })
-const editorContent = computed(() => {
-  console.log('editorContent computed called.')
-  return (content.value?.Body__c === undefined || content.value?.Body__c === null || !Object.hasOwn(content.value, 'Body__c')) ? '' : content.value.Body__c
-})
-const editor = ref({});
+const editorData = ref('');
+const editor = ref(ClassicEditor);
+const editorInstanceRef = ref(null);
 const content = ref({});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
@@ -511,6 +505,7 @@ const obtainContent = async (recordIdVal) => {
     })
     if (contentResponse.data !== null && contentResponse.data !== undefined){
       content.value = contentResponse.data
+      editorData.value = content.value?.Body__c || ''
     }
     console.log('Content obtained: %s', JSON.stringify(content.value, null, '\t'))
   } catch (e) {
@@ -522,7 +517,7 @@ function editorReady(editorInstance) {
   console.log('Editor is ready to use!')
   if(editorInstance !== null && editorInstance !== undefined){
     editorInstance.setData(content.value.Body__c);
-    editor.value = editorInstance;
+    editorInstanceRef.value = editorInstance;
   }
 }
 
@@ -539,7 +534,8 @@ function handleCalloutException(e) {
 
 function handleSave(){
     showModal.value = true;
-    axios.patch(recordApiUrl,{'Body__c':editor.value.getData()},{
+    let recordApiUrl = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${props.recordId}`;
+    axios.patch(recordApiUrl,{'Body__c':editorData.value},{
         headers:{
             'Content-Type':'application/json',
             'Authorization':`Bearer ${props.accessToken}`
@@ -554,9 +550,9 @@ function handleSave(){
     });
 }
 
-function handleAutoSave( editorData ) {
+function handleAutoSave( saveData ) {
     //build the data objects
-    let dataObj = { Body__c: editorData };
+    let dataObj = { Body__c: saveData };
     return axios.patch(recordApiUrl.value,dataObj, {
         headers: {'authorization':`Bearer ${props.accessToken}`,'content-type':'application/json'}
     });
@@ -710,7 +706,7 @@ END: lifecycle hooks
             v-if="isLayoutReady"
             :editor="editor"
             :config="config"
-            :modelValue="editorContent"
+            v-model="editorData"
             v-on:ready="editorReady"
           />
         </div>
