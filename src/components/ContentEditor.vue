@@ -538,7 +538,7 @@ function handleCalloutException(e) {
 
 function handleSave(){
     showModal.value = true;
-    axios.patch(recordApiUrl,{'Body__c':editor.getData()},{
+    axios.patch(recordApiUrl,{'Body__c':editorContent},{
         headers:{
             'Content-Type':'application/json',
             'Authorization':`Bearer ${props.accessToken}`
