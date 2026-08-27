@@ -68,7 +68,6 @@ import {
   RevisionHistory
 } from 'ckeditor5-premium-features'
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter'
-import { RevisionHistoryAdapter } from '../utils/ckeditor-adapter/RevisionHistoryAdapter'
 import CommentList from './list/CommentList.vue'
 import useAuthStore from '../stores/auth'
 import useProcessStatusStore from '../stores/processStatus'
@@ -117,14 +116,13 @@ const props = defineProps({
       return false
     }
   }
-})
+});
 
-const router = useRouter()
+const router = useRouter();
+const authStore = useAuthStore();
 
 const editorContainer = useTemplateRef('editorContainerElement')
-const editorRevisionHistory = useTemplateRef('editorRevisionHistoryElement')
-const editorRevisionHistoryEditor = useTemplateRef('editorRevisionHistoryEditorElement')
-const editorRevisionHistorySidebar = useTemplateRef('editorRevisionHistorySidebarElement')
+
 
 const contentName = computed(() => {
   return content.value?.Parent__r?.Name + ' - ' + content.value?.Name
@@ -149,11 +147,19 @@ const colorArray = computed(() => {
     { color: '#222222', name: '#222222' }
   ]
 })
+const recordApiUrl = computed(()=>{
+    return `${props.apiUrl}/services/data/v58.0/sobjects/memorandumcontent__c/${props.recordId}`
+});
 const config = computed(() => {
   if (!isLayoutReady.value) {
     return null
   }
   return {
+    autosave: {
+        save( editor ) {
+            handleAutoSave( editor.getData() );
+        }
+    },
     licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE,
     salesforceApi: {
       baseUri: props.apiUrl,
@@ -221,7 +227,7 @@ const config = computed(() => {
       Underline,
       WordCount
     ],
-    extraPlugins: [CommentsAdapter, RevisionHistoryAdapter],
+    extraPlugins: [CommentsAdapter],
     toolbar: [
       'style',
       'alignment',
@@ -259,8 +265,7 @@ const config = computed(() => {
       'findAndReplace',
       '|',
       'comment',
-      'commentsArchive',
-      'revisionHistory'
+      'commentsArchive'
     ],
     comments: {
       editorConfig: { extraPlugins: [Bold, Italic, List] }
@@ -332,13 +337,6 @@ const config = computed(() => {
           defaultItem: 'imageStyle:margin-left'
         }
       ]
-    },
-    revisionHistory: {
-      editorContainer: editorContainer.value,
-      viewerContainer: editorRevisionHistory.value,
-      viewerEditorElement: editorRevisionHistoryEditor.value,
-      viewerSidebarContainer: editorRevisionHistorySidebar.value,
-      resumeUnsavedRevision: false
     },
     simpleUpload: {
       uploadUrl: import.meta.env.VITE_IMAGE_PROCESSOR
@@ -493,8 +491,10 @@ const editorContent = computed(() => {
   console.log('editorContent computed called.')
   return (content.value?.Body__c === undefined || content.value?.Body__c === null || !Object.hasOwn(content.value, 'Body__c')) ? '' : content.value.Body__c
 })
-const editor = ref({})
-const content = ref({})
+const editor = ref({});
+const content = ref({});
+const modalText  = ref('Saving...');
+const showModal = ref(false);
 const isLayoutReady = ref(false)
 
 /*
@@ -523,6 +523,46 @@ function editorReady(editorInstance) {
   if(editorInstance !== null && editorInstance !== undefined){
     editorInstance.setData(content.value.Body__c);
   }
+}
+
+function handleCalloutException(e) {
+    switch(e.response.status) {
+        case 401:
+            authStore.$reset();
+            router.push({name:'home'});
+            break;
+        default:
+            console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+    }
+}
+
+function handleSave(){
+    showModal.value = true;
+    axios.patch(recordApiUrl,{'Body__c':editorData.value},{
+        headers:{
+            'Content-Type':'application/json',
+            'Authorization':`Bearer ${props.accessToken}`
+        }
+    }).then(response =>{
+        if(response.status < 300){
+             modalText.value = 'Save Complete';
+             setTimeout(closeModal,2000);
+        }
+    }).catch((err)=>{
+        console.log('There was an error updating the record: %s',JSON.stringify(err,null,"\t"));
+    });
+}
+
+function handleAutoSave( editorData ) {
+    //build the data objects
+    let dataObj = { Body__c: editorData };
+    return axios.patch(recordApiUrl.value,dataObj, {
+        headers: {'authorization':`Bearer ${props.accessToken}`,'content-type':'application/json'}
+    });
+}
+
+function closeModal(){
+    showModal.value = false;
 }
 /*
 END: function definitions
