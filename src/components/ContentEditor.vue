@@ -68,7 +68,6 @@ import {
   RevisionHistory
 } from 'ckeditor5-premium-features'
 import { CommentsAdapter } from '../utils/ckeditor-adapter/CommentsAdapter'
-import { RevisionHistoryAdapter } from '../utils/ckeditor-adapter/RevisionHistoryAdapter'
 import CommentList from './list/CommentList.vue'
 import useAuthStore from '../stores/auth'
 import useProcessStatusStore from '../stores/processStatus'
@@ -117,14 +116,13 @@ const props = defineProps({
       return false
     }
   }
-})
+});
 
-const router = useRouter()
+const router = useRouter();
+const authStore = useAuthStore();
 
 const editorContainer = useTemplateRef('editorContainerElement')
-const editorRevisionHistory = useTemplateRef('editorRevisionHistoryElement')
-const editorRevisionHistoryEditor = useTemplateRef('editorRevisionHistoryEditorElement')
-const editorRevisionHistorySidebar = useTemplateRef('editorRevisionHistorySidebarElement')
+
 
 const contentName = computed(() => {
   return content.value?.Parent__r?.Name + ' - ' + content.value?.Name
@@ -154,6 +152,11 @@ const config = computed(() => {
     return null
   }
   return {
+    autosave: {
+        save( editor ) {
+            handleAutoSave( editor.getData() );
+        }
+    },
     licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE,
     salesforceApi: {
       baseUri: props.apiUrl,
@@ -196,7 +199,6 @@ const config = computed(() => {
       PasteFromOffice,
       PasteFromOfficeEnhanced,
       RemoveFormat,
-      RevisionHistory,
       SelectAll,
       SimpleUploadAdapter,
       SlashCommand,
@@ -221,7 +223,7 @@ const config = computed(() => {
       Underline,
       WordCount
     ],
-    extraPlugins: [CommentsAdapter, RevisionHistoryAdapter],
+    extraPlugins: [CommentsAdapter],
     toolbar: [
       'style',
       'alignment',
@@ -259,8 +261,7 @@ const config = computed(() => {
       'findAndReplace',
       '|',
       'comment',
-      'commentsArchive',
-      'revisionHistory'
+      'commentsArchive'
     ],
     comments: {
       editorConfig: { extraPlugins: [Bold, Italic, List] }
@@ -332,13 +333,6 @@ const config = computed(() => {
           defaultItem: 'imageStyle:margin-left'
         }
       ]
-    },
-    revisionHistory: {
-      editorContainer: editorContainer.value,
-      viewerContainer: editorRevisionHistory.value,
-      viewerEditorElement: editorRevisionHistoryEditor.value,
-      viewerSidebarContainer: editorRevisionHistorySidebar.value,
-      resumeUnsavedRevision: false
     },
     simpleUpload: {
       uploadUrl: import.meta.env.VITE_IMAGE_PROCESSOR
@@ -489,12 +483,12 @@ const config = computed(() => {
     }
   }
 })
-const editorContent = computed(() => {
-  console.log('editorContent computed called.')
-  return (content.value?.Body__c === undefined || content.value?.Body__c === null || !Object.hasOwn(content.value, 'Body__c')) ? '' : content.value.Body__c
-})
-const editor = ref({})
-const content = ref({})
+const editorData = ref('');
+const editor = ref(ClassicEditor);
+const editorInstanceRef = ref(null);
+const content = ref({});
+const modalText  = ref('Saving...');
+const showModal = ref(false);
 const isLayoutReady = ref(false)
 
 /*
@@ -511,6 +505,7 @@ const obtainContent = async (recordIdVal) => {
     })
     if (contentResponse.data !== null && contentResponse.data !== undefined){
       content.value = contentResponse.data
+      editorData.value = content.value?.Body__c || ''
     }
     console.log('Content obtained: %s', JSON.stringify(content.value, null, '\t'))
   } catch (e) {
@@ -522,7 +517,49 @@ function editorReady(editorInstance) {
   console.log('Editor is ready to use!')
   if(editorInstance !== null && editorInstance !== undefined){
     editorInstance.setData(content.value.Body__c);
+    editorInstanceRef.value = editorInstance;
   }
+}
+
+function handleCalloutException(e) {
+    switch(e.response.status) {
+        case 401:
+            authStore.$reset();
+            router.push({name:'home'});
+            break;
+        default:
+            console.log('There was an error: %s',JSON.stringify(e,null,"\t"));
+    }
+}
+
+function handleSave(){
+    showModal.value = true;
+    let recordApiUrl = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${props.recordId}`;
+    axios.patch(recordApiUrl,{'Body__c':editorData.value},{
+        headers:{
+            'Content-Type':'application/json',
+            'Authorization':`Bearer ${props.accessToken}`
+        }
+    }).then(response =>{
+        if(response.status < 300){
+             modalText.value = 'Save Complete';
+             setTimeout(closeModal,2000);
+        }
+    }).catch((err)=>{
+        console.log('There was an error updating the record: %s',JSON.stringify(err,null,"\t"));
+    });
+}
+
+function handleAutoSave( saveData ) {
+    //build the data objects
+    let dataObj = { Body__c: saveData };
+    return axios.patch(recordApiUrl.value,dataObj, {
+        headers: {'authorization':`Bearer ${props.accessToken}`,'content-type':'application/json'}
+    });
+}
+
+function closeModal(){
+    showModal.value = false;
 }
 /*
 END: function definitions
@@ -553,7 +590,7 @@ END: lifecycle hooks
   <!-- BEGIN : Modal-->
   <div v-if="showModal" role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
     <div class="slds-modal__container">
-      <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse">
+      <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" v-on:click="closeModal">
         <svg class="slds-button__icon ala-button__icon_large" aria-hidden="true">
           <use xlink:href="/src/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
         </svg>
@@ -568,7 +605,7 @@ END: lifecycle hooks
         </h2>
       </div>
       <div class="slds-modal__footer">
-        <button class="slds-button slds-button_neutral" aria-label="Cancel and close">Close</button>
+        <button class="slds-button slds-button_neutral" aria-label="Cancel and close" v-on:click="closeModal">Close</button>
       </div>
     </div>
   </div>
@@ -669,7 +706,7 @@ END: lifecycle hooks
             v-if="isLayoutReady"
             :editor="editor"
             :config="config"
-            :modelValue="editorContent"
+            v-model="editorData"
             v-on:ready="editorReady"
           />
         </div>
