@@ -6,6 +6,7 @@ import { Ckeditor } from '@ckeditor/ckeditor5-vue'
 //updated imports for ckeditor 5 since version 45
 import {
   ClassicEditor,
+  Autosave,
   Essentials,
   Alignment,
   Bold,
@@ -154,7 +155,7 @@ const config = computed(() => {
   return {
     autosave: {
         save( editor ) {
-            handleAutoSave( editor.getData() );
+            return handleAutoSave( editor.getData() );
         }
     },
     licenseKey: import.meta.env.VITE_CKEDITOR_LICENSE,
@@ -165,6 +166,7 @@ const config = computed(() => {
       contentId: props.recordId
     },
     plugins: [
+      Autosave,
       Alignment,
       BlockQuote,
       Bold,
@@ -489,7 +491,20 @@ const editorInstanceRef = ref(null);
 const content = ref({});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
-const isLayoutReady = ref(false)
+const isLayoutReady = ref(false);
+
+/*
+Save-tracking state for coordinating content switches.
+saveInProgress — set while a manual handleSave() PATCH is in-flight.
+autoSavePromise — tracks the latest autosave PATCH so the watch can await it.
+currentLoadId  — monotonic counter; each watch execution captures its own
+                 loadId and checks it against currentLoadId before setting
+                 isLayoutReady. If a newer watch execution has started, the
+                 older one backs off so rapid recordId changes don't race.
+*/
+const saveInProgress = ref(false);
+const autoSavePromise = ref(null);
+let currentLoadId = 0;
 
 /*
 BEGIN: function definitions
@@ -533,6 +548,8 @@ function handleCalloutException(e) {
 }
 
 function handleSave(){
+    if(saveInProgress.value) return;
+    saveInProgress.value = true;
     showModal.value = true;
     let recordApiUrl = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${props.recordId}`;
     axios.patch(recordApiUrl,{'Body__c':editorData.value},{
@@ -547,15 +564,25 @@ function handleSave(){
         }
     }).catch((err)=>{
         console.log('There was an error updating the record: %s',JSON.stringify(err,null,"\t"));
+    }).finally(() => {
+        saveInProgress.value = false;
     });
 }
 
 function handleAutoSave( saveData ) {
     //build the data objects
     let dataObj = { Body__c: saveData };
-    return axios.patch(recordApiUrl.value,dataObj, {
+    let recordApiUrl = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${props.recordId}`;
+    const promise = axios.patch(recordApiUrl,dataObj, {
         headers: {'authorization':`Bearer ${props.accessToken}`,'content-type':'application/json'}
     });
+    autoSavePromise.value = promise;
+    promise.finally(() => {
+        if (autoSavePromise.value === promise) {
+            autoSavePromise.value = null;
+        }
+    });
+    return promise;
 }
 
 function closeModal(){
@@ -575,10 +602,55 @@ onBeforeMount(async () => {
 })
 watch(
   () => props.recordId,
-  async (newVal) => {
-    isLayoutReady.value = false
-    await obtainContent(newVal)
-    isLayoutReady.value = true
+  async (newVal, oldVal) => {
+    // Skip the initial firing — onBeforeMount handles the first load.
+    if (!oldVal) return;
+
+    const loadId = ++currentLoadId;
+
+    // Capture the current editor content before any await so we save
+    // the data that belongs to the outgoing record, even if a newer
+    // watch execution changes editorData in the meantime.
+    const dataToSave = editorData.value;
+    const currentBody = content.value?.Body__c;
+
+    // 1. Wait for any in-flight manual save to finish.
+    while (saveInProgress.value) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+
+    // 2. Wait for any in-flight autosave to finish.
+    if (autoSavePromise.value) {
+      await autoSavePromise.value;
+    }
+
+    // 3. Save the outgoing record's content if it has unsaved changes.
+    if (dataToSave && dataToSave !== currentBody) {
+      try {
+        let saveUrl = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${oldVal}`;
+        await axios.patch(saveUrl, {'Body__c': dataToSave}, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${props.accessToken}`
+          }
+        });
+      } catch (e) {
+        console.log('Error saving content before recordId change: %s', JSON.stringify(e, null, '\t'));
+      }
+    }
+
+    // 4. Tear down the current editor and load the new content.
+    isLayoutReady.value = false;
+
+    // If a newer watch execution has already started, back off.
+    if (loadId !== currentLoadId) return;
+
+    await obtainContent(newVal);
+
+    // If a newer watch execution has started while we were fetching, back off.
+    if (loadId !== currentLoadId) return;
+
+    isLayoutReady.value = true;
   }
 )
 /*
