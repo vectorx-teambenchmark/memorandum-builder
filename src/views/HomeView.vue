@@ -9,13 +9,14 @@ const router = useRouter();
 const authStore = useAuthStore();
 const sObjectList = ref([]);
 
-async function redirect() {
+async function redirect(recordIdFromAuth) {
   await obtainGlobalDescribe();
-  let providedId = route.params?.recordId;
+  let providedId = recordIdFromAuth || route.params?.recordId;
   let redirectObj = {name:'home'};
   if(providedId !== undefined) {
     //try to find what object the providedId represents
     let providedObject = sObjectList.value.find(obj => providedId.startsWith(obj.keyPrefix));
+    console.log('Provided Object: %s', JSON.stringify(providedId, null, "\t"));
     switch(providedObject.name){
       case 'Client_Marketing_Material__c':
         redirectObj.name = 'versionselect';

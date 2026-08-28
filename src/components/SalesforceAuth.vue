@@ -1,15 +1,17 @@
 <script setup>
 import { ref, onBeforeMount } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import useAuthStore from '../stores/auth';
 
 //events that are able to be emitted.
 const emit = defineEmits({
     authenticated: null
+    // The second argument is the recordId to navigate to after authentication.
 });
 
 const authStore = useAuthStore();
 const route = useRoute();
+const router = useRouter();
 const isExchanging = ref(false);
 const exchangeError = ref('');
 
@@ -61,17 +63,14 @@ async function handleAuthCallback(){
 
         // Restore the recordId from the PKCE session data
         const storedRecordId = sessionStorage.getItem('pkce_record_id');
-        if(storedRecordId){
-            route.params.recordId = storedRecordId;
-            sessionStorage.removeItem('pkce_record_id');
-        }
+        //sessionStorage.removeItem('pkce_record_id');
 
         // Clean the authorization code and state from the browser URL so a
         // page refresh doesn't attempt to re-use a single-use code.
         const cleanUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-
-        return true;
+        //window.history.replaceState({}, document.title, cleanUrl);
+        console.log('Record Id FROM State: %s', storedRecordId);
+        return storedRecordId;
     } catch(error){
         console.error('Token exchange failed:', error);
         exchangeError.value = 'Failed to complete authentication with Salesforce. ' +
@@ -82,13 +81,13 @@ async function handleAuthCallback(){
     }
 }
 
-//lifecycle hooks 
+//lifecycle hooks
 onBeforeMount(async ()=>{
     // Check for the authorization code in the query parameters (PKCE / code flow)
     if(route.query?.code) {
-        const success = await handleAuthCallback();
-        if(success && authStore.isAuthenticated){
-            emit('authenticated');
+        const recordId = await handleAuthCallback();
+        if(recordId !== false && authStore.isAuthenticated){
+            emit('authenticated', recordId);
         }
         return;
     }
@@ -101,11 +100,15 @@ onBeforeMount(async ()=>{
                 prevItem[hashKeyVal[0]] = hashKeyVal[1];
             }
             return prevItem;
-        },{}); 
+        }, {});
+        console.log('Hash Info: %s', JSON.stringify(hashInfo, null, "\t"));
         authStore.setToken(hashInfo?.access_token);
         authStore.setApiUrl(hashInfo?.instance_url);
         authStore.setIdUrl(hashInfo?.id);
-        route.params.recordId = hashInfo?.state;
+        if(hashInfo?.state){
+            const targetParams = { recordId: hashInfo.state };
+            router.replace({ params: targetParams });
+        }
     }
 
     if(authStore.isAuthenticated){
