@@ -63,7 +63,7 @@ async function handleAuthCallback(){
 
         // Restore the recordId from the PKCE session data
         const storedRecordId = sessionStorage.getItem('pkce_record_id');
-        //sessionStorage.removeItem('pkce_record_id');
+        sessionStorage.removeItem('pkce_record_id');
 
         // Clean the authorization code and state from the browser URL so a
         // page refresh doesn't attempt to re-use a single-use code.
