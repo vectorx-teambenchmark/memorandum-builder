@@ -68,8 +68,6 @@ async function handleAuthCallback(){
         // Clean the authorization code and state from the browser URL so a
         // page refresh doesn't attempt to re-use a single-use code.
         const cleanUrl = window.location.origin + window.location.pathname;
-        //window.history.replaceState({}, document.title, cleanUrl);
-        console.log('Record Id FROM State: %s', storedRecordId);
         return storedRecordId;
     } catch(error){
         console.error('Token exchange failed:', error);

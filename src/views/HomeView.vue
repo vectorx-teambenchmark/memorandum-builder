@@ -16,7 +16,6 @@ async function redirect(recordIdFromAuth) {
   if(providedId !== undefined) {
     //try to find what object the providedId represents
     let providedObject = sObjectList.value.find(obj => providedId.startsWith(obj.keyPrefix));
-    console.log('Provided Object: %s', JSON.stringify(providedId, null, "\t"));
     switch(providedObject.name){
       case 'Client_Marketing_Material__c':
         redirectObj.name = 'versionselect';
