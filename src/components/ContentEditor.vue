@@ -119,6 +119,7 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['contentupdated']);
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -491,6 +492,7 @@ const editorInstanceRef = ref(null);
 const content = ref({});
 const modalText  = ref('Saving...');
 const showModal = ref(false);
+const displayRenameContentForm = ref(false);
 const isLayoutReady = ref(false);
 
 /*
@@ -537,6 +539,7 @@ function editorReady(editorInstance) {
 }
 
 function handleCalloutException(e) {
+    console.error(e);
     switch(e.response.status) {
         case 401:
             authStore.$reset();
@@ -567,6 +570,24 @@ function handleSave(){
     }).finally(() => {
         saveInProgress.value = false;
     });
+}
+
+async function handleSaveInformation(){
+    try {
+        let contentUpdateEndpoint =`${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumContent__c/${props.recordId}`;
+        let tempObject = Object.assign({},{Name:content.value.Name});
+        await axios({
+            method: 'patch',
+            url: contentUpdateEndpoint,
+            data: tempObject,
+            headers: {'authorization':`Bearer ${props.accessToken}`}
+
+        });
+        displayRenameContentForm.value = false;
+        emit('contentupdated');
+    } catch (e) {
+        handleCalloutException(e);
+    }
 }
 
 function handleAutoSave( saveData ) {
@@ -730,11 +751,6 @@ END: lifecycle hooks
                   Save
                 </button>
               </li>
-              <li>
-                <button class="slds-button slds-button_text-destructive" v-on:click="issueDebug">
-                  Debug
-                </button>
-              </li>
             </ul>
           </div>
         </div>
@@ -746,7 +762,7 @@ END: lifecycle hooks
       <div class="slds-form-element">
         <label class="slds-form-element__label" for="txtContentName">Content Name</label>
         <div class="slds-form-element__control">
-          <input type="text" class="slds-input" id="txtContentName" v-model="contentRecord.Name" />
+          <input type="text" class="slds-input" id="txtContentName" v-model="content.Name" />
         </div>
       </div>
     </div>

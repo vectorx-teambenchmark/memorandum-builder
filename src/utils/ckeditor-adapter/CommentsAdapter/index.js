@@ -69,7 +69,7 @@ export class CommentsAdapter extends Plugin {
             baseUri: this.editor.config.get('salesforceApi').baseUri,
             accessToken: this.editor.config.get('salesforceApi').accessToken,
             currentUser: this.currentUserId,
-            currentRecordId: this.currentRecordId,
+            currentRecordId: this.editor.config.get('salesforceApi').contentId,
             async addComment(data){
                 let dataObj = { Content__c: data.content, ThreadId__c: data.threadId, Parent__c: this.currentRecordId };
                 let createCommentUrl = `${this.baseUri}/services/data/v67.0/sobjects/MemorandumContentComment__c/ExternalCommentId__c/${data.commentId}`;
@@ -222,7 +222,7 @@ export class CommentsAdapter extends Plugin {
         };
         commentsRepositoryPlugin.on('addComment',(evt)=>{
             console.log('addComment event fired');
-            evt.source.adapter.currentRecordId = sessionStorage.getItem('currentRecordId');
+            evt.source.adapter.currentRecordId = this.currentRecordId;
             console.log('currentRecordId passed in is: %s',evt.source.adapter.currentRecordId);
         },{ priority: 'high' });
     }
