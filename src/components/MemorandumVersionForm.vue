@@ -1,6 +1,5 @@
 <script setup>
     import { onBeforeMount, ref } from 'vue';
-    import axios from 'axios';
     import SelectorBox from './SelectorBox.vue';
     const props = defineProps({
         apiToken: {
@@ -47,23 +46,6 @@
     }
 
     onBeforeMount(async () => {
-        /*
-        let endpoint = `${props.urlBase}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/sobjects/MemorandumVersion__c/describe`;
-        try {
-            let response = await axios({
-                url: endpoint,
-                method: 'get',
-                responseType: 'json',
-                headers: {'Authorization':`Bearer ${props.apiToken}`}
-            });
-            let statusField = response.data.fields.find(obj => obj.name === 'Status__c');
-            statusOptions.value = statusField.picklistValues.map( plItem => {
-                return { label:plItem.label, value:plItem.value };
-            })
-        } catch(e) {
-            console.log('Error: %s',JSON.stringify(e,null,"\t"));
-        }
-        */
        statusOptions.value = [{label:'Draft',value:'Draft'}];
     });
 </script>

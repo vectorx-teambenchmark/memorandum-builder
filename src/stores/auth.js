@@ -156,7 +156,7 @@ const useAuthStore = defineStore('authStore',()=>{
             // Clean up PKCE session values regardless of success or failure
             sessionStorage.removeItem('pkce_code_verifier');
             sessionStorage.removeItem('pkce_state');
-            sessionStorage.removeItem('pkce_record_id');
+            //sessionStorage.removeItem('pkce_record_id'); //prematurely removed before it could be used for redirection to correct place after authentication.
         }
     }
 
