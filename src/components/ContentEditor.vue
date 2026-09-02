@@ -486,10 +486,14 @@ const config = computed(() => {
     }
   }
 })
+const hasExternalComments = computed(()=>{
+    return commentArray.value.length > 0;
+});
 const editorData = ref('');
 const editor = ref(ClassicEditor);
 const editorInstanceRef = ref(null);
 const content = ref({});
+const commentArray = ref([]);
 const modalText  = ref('Saving...');
 const showModal = ref(false);
 const displayRenameContentForm = ref(false);
@@ -524,7 +528,14 @@ const obtainContent = async (recordIdVal) => {
       content.value = contentResponse.data
       editorData.value = content.value?.Body__c || ''
     }
-    console.log('Content obtained: %s', JSON.stringify(content.value, null, '\t'))
+    // console.log('Content obtained: %s', JSON.stringify(content.value, null, '\t'))
+    let commentQuery = encodeURIComponent(`SELECT Id, Text__c, CreatedDate FROM MemorandumExternalComment__c WHERE Parent__c = '${props.recordId}'`);
+    let commentQueryUrl = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${commentQuery}`;
+    let commentResponse = axios.get(commentQueryUrl, {
+      responseType: 'json',
+      headers: { authorization: `Bearer ${props.accessToken}` }
+    });
+    commentArray.value = commentResponse.data.records.map(item => item);
   } catch (e) {
     console.log('Error getting content: %s', JSON.stringify(e, null, '\t'))
   }
