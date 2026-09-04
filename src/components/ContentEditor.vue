@@ -531,7 +531,7 @@ const obtainContent = async (recordIdVal) => {
     // console.log('Content obtained: %s', JSON.stringify(content.value, null, '\t'))
     let commentQuery = encodeURIComponent(`SELECT Id, Text__c, CreatedDate FROM MemorandumExternalComment__c WHERE Parent__c = '${props.recordId}'`);
     let commentQueryUrl = `${props.apiUrl}/services/data/${import.meta.env.VITE_SALESFORCE_VERSION}/query?q=${commentQuery}`;
-    let commentResponse = axios.get(commentQueryUrl, {
+    let commentResponse = await axios.get(commentQueryUrl, {
       responseType: 'json',
       headers: { authorization: `Bearer ${props.accessToken}` }
     });
